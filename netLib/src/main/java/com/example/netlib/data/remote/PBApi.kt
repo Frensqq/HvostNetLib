@@ -5,6 +5,7 @@ import com.example.netlib.domain.model.AppointmentList
 import com.example.netlib.domain.model.Cancel
 import com.example.netlib.domain.model.ClinicList
 import com.example.netlib.domain.model.DoctorList
+import com.example.netlib.domain.model.Pet
 import com.example.netlib.domain.model.PetList
 import com.example.netlib.domain.model.RequestAppointment
 import com.example.netlib.domain.model.RequestPet
@@ -32,6 +33,7 @@ import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlin.collections.forEach
@@ -136,13 +138,22 @@ class PBApi(
         post("collections/users/auth-with-password", data)
 
     suspend fun refreshToken(): AuthResponse =
-        post("collections/users/auth-refresh", {})
+        post("collections/users/auth-refresh", buildJsonObject{})
 
-    suspend fun getProfile(userId: String, filter: String? = null): User =
-        get("collections/users/records/${userId}", filter)
+    suspend fun getProfile(userId: String): User =
+        get("collections/users/records/${userId}")
 
-    suspend fun patchProfile(userId: String, data: User): User =
-        patch("collections/users/records/${userId}", data)
+    suspend fun patchProfile(
+        userId: String,
+        data: User,
+        avatar: UploadFile? = null
+    ): User =
+        multipart(
+            path = "collections/users/records/${userId}",
+            data = data,
+            files = files("avatar" to avatar),
+            patch = true
+        )
 
 
     suspend fun getServices(filter: String? = null): ServiceList =
@@ -161,11 +172,27 @@ class PBApi(
     suspend fun getPet(filter: String? = null): PetList =
         get("collections/pets/records", filter)
 
-    suspend fun postPet(data: RequestPet): PetList =
-        post("collections/pets/records", data)
+    suspend fun postPet(
+        data: RequestPet,
+        photo: UploadFile? = null
+    ): PetList =
+        multipart(
+            path = "collections/pets/records",
+            data = data,
+            files = files("photo" to photo),
+            patch = false
+        )
 
-    suspend fun patchPet(idPet: String, data: RequestPet): PetList =
-        patch("collections/pets/records/${idPet}", data)
+    suspend fun patchPet(
+        idPet: String,
+        data: RequestPet,
+        photo: UploadFile? = null
+    ): Pet = multipart(
+        path = "collections/pets/records/${idPet}",
+        data = data,
+        files = files("photo" to photo),
+        patch = true
+    )
 
     suspend fun deletePet(idPet: String): Unit {
         delete("collections/pets/records/${idPet}")
