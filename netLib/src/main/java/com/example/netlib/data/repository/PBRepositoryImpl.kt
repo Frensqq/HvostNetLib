@@ -21,6 +21,9 @@ import com.example.netlib.domain.model.system.Registration
 import com.example.netlib.domain.model.system.UploadFile
 import com.example.netlib.domain.nework.Network
 import com.example.netlib.domain.repository.PBRepository
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.bodyAsText
 import io.ktor.utils.io.errors.IOException
@@ -38,9 +41,11 @@ class PBRepositoryImpl(
 
         return try {
             NetworkResult.Success(apiCall())
+        } catch (e: HttpRequestTimeoutException) {
+            NetworkResult.Timeout
         } catch (e: IOException) {
             NetworkResult.NoInternet
-        }catch (e: ResponseException) {
+        } catch (e: ResponseException) {
             val text = runCatching { e.response.bodyAsText() }.getOrDefault("")
             val error = runCatching {
                 Json { ignoreUnknownKeys = true }.decodeFromString<ErrorResponse>(text)
@@ -50,10 +55,7 @@ class PBRepositoryImpl(
             NetworkResult.Error(error)
         } catch (e: Exception) {
             NetworkResult.Error(
-                errorResponse = ErrorResponse(
-                    status = -1,
-                    message = e.message ?: "Unknown error"
-                )
+                ErrorResponse(status = -1, message = e.message ?: "Unknown error")
             )
         }
     }
@@ -102,7 +104,7 @@ class PBRepositoryImpl(
     override suspend fun postPet(
         data: RequestPet,
         photo: UploadFile?
-    ): NetworkResult<PetList> = safeApiCall {
+    ): NetworkResult<Pet> = safeApiCall {
         api.postPet(data, photo)
     }
 

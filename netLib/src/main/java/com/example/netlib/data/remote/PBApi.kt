@@ -182,7 +182,7 @@ class PBApi(
     suspend fun postPet(
         data: RequestPet,
         photo: UploadFile? = null
-    ): PetList =
+    ): Pet =
         multipart(
             path = "collections/pets/records",
             data = data,

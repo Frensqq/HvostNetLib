@@ -46,7 +46,7 @@ interface PBRepository {
     suspend fun postPet(
         data: RequestPet,
         photo: UploadFile? = null
-    ): NetworkResult< PetList>
+    ): NetworkResult< Pet>
 
     suspend fun patchPet(
         idPet: String,
