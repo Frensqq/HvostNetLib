@@ -22,7 +22,9 @@ import com.example.netlib.domain.model.system.UploadFile
 import com.example.netlib.domain.nework.Network
 import com.example.netlib.domain.repository.PBRepository
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.statement.bodyAsText
 import io.ktor.utils.io.errors.IOException
+import kotlinx.serialization.json.Json
 
 class PBRepositoryImpl(
    private val  api: PBApi,
@@ -38,13 +40,14 @@ class PBRepositoryImpl(
             NetworkResult.Success(apiCall())
         } catch (e: IOException) {
             NetworkResult.NoInternet
-        } catch (e: ResponseException) {
-            NetworkResult.Error(
-                errorResponse = ErrorResponse(
-                    status = e.response.status.value,
-                    message = e.message.toString(),
-                )
-            )
+        }catch (e: ResponseException) {
+            val text = runCatching { e.response.bodyAsText() }.getOrDefault("")
+            val error = runCatching {
+                Json { ignoreUnknownKeys = true }.decodeFromString<ErrorResponse>(text)
+            }.getOrElse {
+                ErrorResponse(status = e.response.status.value, message = e.message.orEmpty())
+            }
+            NetworkResult.Error(error)
         } catch (e: Exception) {
             NetworkResult.Error(
                 errorResponse = ErrorResponse(

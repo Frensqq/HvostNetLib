@@ -1,5 +1,8 @@
 package com.example.netlib.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ClinicList(
     val page:Int,
     val perPage: Int,
