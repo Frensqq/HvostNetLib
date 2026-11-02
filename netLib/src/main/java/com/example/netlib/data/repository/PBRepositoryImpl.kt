@@ -141,5 +141,15 @@ class PBRepositoryImpl(
     ): NetworkResult<Appointment> = safeApiCall {
         api.cancelAppointment(id, data)
     }
+    override fun saveToken(
+        token: String?
+    ){
+        api.saveToken(token)
+    }
+    override fun getToken() = api.getToken()
+
+
+
+
 
 }

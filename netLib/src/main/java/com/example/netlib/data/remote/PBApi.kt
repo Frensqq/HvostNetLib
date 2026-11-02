@@ -16,6 +16,7 @@ import com.example.netlib.domain.model.system.AuthRequest
 import com.example.netlib.domain.model.system.AuthResponse
 import com.example.netlib.domain.model.system.Registration
 import com.example.netlib.domain.model.system.UploadFile
+import com.google.gson.stream.JsonToken
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -39,7 +40,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.collections.forEach
 
 class PBApi(
-    private val client: HttpClient
+    private val client: HttpClient,
 ) {
 
     private val json = Json {
@@ -143,6 +144,12 @@ class PBApi(
     suspend fun getProfile(userId: String): User =
         get("collections/users/records/${userId}")
 
+
+    fun saveToken(token: String? = null){
+        PBApiService.token = token
+    }
+    fun getToken() = PBApiService.token
+
     suspend fun patchProfile(
         userId: String,
         data: User,
@@ -224,6 +231,8 @@ class PBApi(
             "hvost/appointments/${id}/cancel",
             data
         )
+
+
 
 
 }

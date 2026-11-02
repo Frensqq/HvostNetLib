@@ -13,8 +13,9 @@ import kotlinx.serialization.json.Json
 object PBApiService {
 
     const val BASE_URL = "http://frens-project.tech:8090/api/"
-
+    
     var token: String? = null
+
 
     val instance: PBApi by lazy {
         PBApi(
@@ -43,7 +44,7 @@ object PBApiService {
                         header("Authorization", it)
                     }
                 }
-            }
+            },
         )
     }
 }

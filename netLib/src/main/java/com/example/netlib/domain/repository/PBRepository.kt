@@ -69,4 +69,10 @@ interface PBRepository {
         id: String,
         data: Cancel
     ): NetworkResult< Appointment>
+
+
+    fun saveToken(
+        token: String? = null
+    )
+     fun getToken() : String?
 }
