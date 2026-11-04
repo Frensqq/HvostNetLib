@@ -1,8 +1,6 @@
-package com.example.netlib.domain.model.webSoket
-
+package com.example.netlib.domain.model.websocket
 
 import kotlinx.serialization.Serializable
-
 
 @Serializable
 data class WebSocketUser(
@@ -62,7 +60,7 @@ data class SlotFreedEvent(
 data class StatusEvent(
     val appointmentId: String,
     val number: Int,
-    val status: String,          // pending | confirmed | done | cancelled
+    val status: String,
     val statusLabel: String = "",
     val previous: String = "",
     val cancelReason: String = "",
@@ -75,7 +73,7 @@ data class DelayEvent(
     val appointmentId: String,
     val number: Int,
     val minutes: Int,
-    val newTime: String? = null, // null при minutes = 0 (задержка отменена)
+    val newTime: String? = null,
     val message: String = ""
 )
 
@@ -83,10 +81,10 @@ data class DelayEvent(
 data class QueueEvent(
     val appointmentId: String,
     val number: Int,
-    val state: String,           // waiting | next | call
+    val state: String,
     val ahead: Int = 0,
     val etaMin: Int = 0,
-    val room: String? = null,    // null при state = waiting
+    val room: String? = null,
     val delayMin: Int = 0,
     val message: String = "",
     val demo: Boolean = false
@@ -96,42 +94,4 @@ data class QueueEvent(
 data class QueueDemoStartedEvent(
     val appointmentId: String,
     val stepSec: Int = 8
-)
-
-// ============================================================
-//  ИСХОДЯЩИЕ СООБЩЕНИЯ КЛИЕНТА
-//  Сериализуются WsEventParser-ом и отправляются строкой.
-// ============================================================
-
-@Serializable
-data class PingOutgoing(
-    val type: String = "ping"
-)
-
-@Serializable
-data class SubscribeOutgoing(
-    val type: String = "subscribe",
-    val topic: String = "slots",
-    val doctor: String,
-    val date: String
-)
-
-@Serializable
-data class UnsubscribeOutgoing(
-    val type: String = "unsubscribe",
-    val topic: String = "slots",
-    val doctor: String? = null,   // null — отписаться от всех врачей
-    val date: String? = null      // null — отписаться от всех дат
-)
-
-@Serializable
-data class QueueDemoOutgoing(
-    val type: String = "queue_demo",
-    val appointmentId: String
-)
-
-
-data class ClosedEvent(
-    val code: Int,
-    val reason: String
 )
