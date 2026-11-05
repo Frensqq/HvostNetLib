@@ -1,8 +1,7 @@
 package com.example.netlib
 
-
-
 import com.example.netlib.domain.websocket.WsConnection
+import kotlinx.coroutines.CompletableDeferred
 
 class FakeWsConnection : WsConnection {
 
@@ -11,11 +10,12 @@ class FakeWsConnection : WsConnection {
     var message = """{"type":"hello"}"""
 
     var connectCount = 0
-
     var listenCount = 0
 
     var disconnectFirst = true
     var closeCode: Int? = null
+
+    var firstListenGate: CompletableDeferred<Unit>? = null
 
     override suspend fun connect(token: String) {
         connectCount++
@@ -32,6 +32,8 @@ class FakeWsConnection : WsConnection {
         listenCount++
 
         if (disconnectFirst && listenCount == 1) {
+            onMessage(message)
+            firstListenGate?.await()
             return null
         }
 

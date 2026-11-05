@@ -3,12 +3,10 @@ package com.example.netlib.data.remote
 import com.example.netlib.domain.model.websocket.*
 import com.example.netlib.domain.websocket.HvostRealtimeClient
 import com.example.netlib.domain.websocket.WsConnection
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,7 +19,6 @@ import kotlin.coroutines.cancellation.CancellationException
 class KtorRealtimeClient(
     private val connection: WsConnection
 ) : HvostRealtimeClient {
-
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -47,10 +44,8 @@ class KtorRealtimeClient(
             while (isActive) {
                 try {
                     lastCloseCode = null
-
                     connection.connect(token)
                     isConnected = true
-
 
                     val closeCode = connection.listen { message ->
                         val event = parse(message)
@@ -101,7 +96,7 @@ class KtorRealtimeClient(
                 if (!isActive || lastCloseCode == 4001) break
 
                 delay(retryDelay)
-                retryDelay = (retryDelay * 2).coerceAtMost(30_000L)
+                retryDelay = nextReconnectDelay(retryDelay)
             }
 
             isConnected = false
@@ -122,7 +117,10 @@ class KtorRealtimeClient(
 
     override suspend fun subscribeSlots(doctor: String, date: String) {
         val message = PBApiService.json.encodeToString(
-            SubscribeOutgoing(doctor = doctor, date = date)
+            SubscribeOutgoing(
+                doctor = doctor,
+                date = date
+            )
         )
 
         connection.send(message)
@@ -133,7 +131,10 @@ class KtorRealtimeClient(
 
     override suspend fun unsubscribeSlots(doctor: String?, date: String?) {
         val message = PBApiService.json.encodeToString(
-            UnsubscribeOutgoing(doctor = doctor, date = date)
+            UnsubscribeOutgoing(
+                doctor = doctor,
+                date = date
+            )
         )
 
         connection.send(message)
@@ -146,6 +147,11 @@ class KtorRealtimeClient(
         val message = PBApiService.json.encodeToString(
             QueueDemoOutgoing(appointmentId = appointmentId)
         )
+
         connection.send(message)
     }
+}
+
+internal fun nextReconnectDelay(currentDelay: Long): Long {
+    return (currentDelay * 2).coerceAtMost(30_000L)
 }

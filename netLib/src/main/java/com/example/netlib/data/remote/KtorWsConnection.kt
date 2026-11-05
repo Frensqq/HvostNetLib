@@ -1,20 +1,22 @@
+
 package com.example.netlib.data.remote
 
 import com.example.netlib.domain.websocket.WsConnection
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
-import io.ktor.websocket.Frame
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.close
-import io.ktor.websocket.send
 import io.ktor.client.request.url
+import io.ktor.websocket.DefaultWebSocketSession
+import io.ktor.websocket.Frame
+import io.ktor.websocket.close
 import io.ktor.websocket.readText
-import io.ktor.websocket.readReason
+import io.ktor.websocket.send
+
 class KtorWsConnection(
     private val httpClient: HttpClient,
     private val wsUrl: String
 ) : WsConnection {
-    private var session: WebSocketSession? = null
+
+    private var session: DefaultWebSocketSession? = null
 
     override suspend fun connect(token: String) {
         session = httpClient.webSocketSession {
@@ -45,22 +47,20 @@ class KtorWsConnection(
         }
     }
 
-    override suspend fun listen(onMessage: suspend (String) -> Unit): Int? {
+    override suspend fun listen(
+        onMessage: suspend (String) -> Unit
+    ): Int? {
         val currentSession = session
             ?: throw IllegalStateException("WebSocket is not connected")
 
-        var closeCode: Int? = null
-
         for (frame in currentSession.incoming) {
-            when (frame) {
-                is Frame.Text -> onMessage(frame.readText())
-                is Frame.Close -> {
-                    closeCode = frame.readReason()?.code?.toInt()
-                }
-                else -> Unit
+            if (frame is Frame.Text) {
+                onMessage(frame.readText())
             }
         }
 
-        return closeCode
+        return currentSession.closeReason.await()
+            ?.code
+            ?.toInt()
     }
 }

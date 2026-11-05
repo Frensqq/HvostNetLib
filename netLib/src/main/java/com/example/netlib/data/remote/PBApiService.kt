@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 
 object PBApiService {
 
+    //домены ведут на vps где развернут docker c сервером
     const val BASE_URL = "http://frens-project.tech:8090/api/"
     const val WS_URL = "ws://frens-project.tech:8091/ws"
 
