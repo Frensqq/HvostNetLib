@@ -1,6 +1,5 @@
 package com.example.netlib
 
-import android.text.BoringLayout
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.data.repository.PBRepositoryImpl
 import com.example.netlib.domain.model.RequestAppointment
@@ -8,12 +7,11 @@ import com.example.netlib.domain.model.Slots
 import com.example.netlib.domain.model.system.AuthRequest
 import com.example.netlib.domain.model.system.AuthResponse
 import com.example.netlib.domain.model.system.NetworkResult
-import com.example.netlib.domain.nework.Network
+import com.example.netlib.domain.network.Network
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.request
 import io.ktor.http.HttpHeaders
 
 import io.ktor.http.HttpStatusCode

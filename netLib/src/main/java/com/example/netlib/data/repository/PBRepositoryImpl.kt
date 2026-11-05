@@ -19,10 +19,8 @@ import com.example.netlib.domain.model.system.ErrorResponse
 import com.example.netlib.domain.model.system.NetworkResult
 import com.example.netlib.domain.model.system.Registration
 import com.example.netlib.domain.model.system.UploadFile
-import com.example.netlib.domain.nework.Network
+import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.PBRepository
-import io.ktor.client.network.sockets.ConnectTimeoutException
-import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.bodyAsText
