@@ -66,14 +66,6 @@ class PBApi(
         setBody(data)
     }.body()
 
-    private suspend inline fun <reified T> patch(
-        path: String,
-        data: Any
-    ): T = client.patch(path) {
-        contentType(ContentType.Application.Json)
-        setBody(data)
-    }.body()
-
     private suspend fun delete(path: String){
         client.delete(path)
     }
@@ -86,51 +78,59 @@ class PBApi(
         .associate { it.first to listOf(it.second!!) }
 
 
-    private inline fun <reified D> fields(data: D): Map<String, String> {
-        val objectData = json.encodeToJsonElement(data).jsonObject
-
-        return objectData.mapNotNull { (key, value) ->
-            if (value == JsonNull) {
-                null
-            } else {
-                key to if (value is JsonPrimitive) value.content else value.toString()
-            }
-        }.toMap()
-    }
-
-    private suspend inline fun <reified T, reified D> multipart(
-        path: String,
-        data: D,
-        files: Map<String, List<UploadFile>>,
-        patch: Boolean = false
-    ): T {
-
-        val body = MultiPartFormDataContent(
-            formData {
-                fields(data).forEach { (k, v) -> append(k, v) }
-
-                files.forEach { (field, list) ->
-                    list.forEach { file ->
-                        append(
-                            field,
-                            file.bytes,
-                            Headers.build {
-                                append(
-                                    HttpHeaders.ContentDisposition,
-                                    "filename=\"${file.name}\""
-                                )
-                                append(HttpHeaders.ContentType, file.mimeType)
-                            }
-                        )
-                    }
+    private inline fun <reified D> fields(data: D): Map<String, String> =
+        json.encodeToJsonElement(data)
+            .jsonObject
+            .mapNotNull { (key, value) ->
+                if (value == JsonNull) null
+                else key to value.let {
+                    if (it is JsonPrimitive) it.content else it.toString()
                 }
             }
-        )
-        return if (patch)
-            client.patch(path) { setBody(body) }.body()
-        else
-            client.post(path) { setBody(body) }.body()
-    }
+            .toMap()
+
+    private inline fun <reified D> multipartBody(
+        data: D,
+        files: Map<String, List<UploadFile>>
+    ) = MultiPartFormDataContent(
+        formData {
+            fields(data).forEach { (key, value) ->
+                append(key, value)
+            }
+
+            files.forEach { (field, list) ->
+                list.forEach { file ->
+                    append(
+                        field,
+                        file.bytes,
+                        Headers.build {
+                            append(
+                                HttpHeaders.ContentDisposition,
+                                "filename=\"${file.name}\""
+                            )
+                            append(HttpHeaders.ContentType, file.mimeType)
+                        }
+                    )
+                }
+            }
+        }
+    )
+
+    private suspend inline fun <reified T, reified D> postMultipart(
+        path: String,
+        data: D,
+        files: Map<String, List<UploadFile>>
+    ): T = client.post(path) {
+        setBody(multipartBody(data, files))
+    }.body()
+
+    private suspend inline fun <reified T, reified D> patchMultipart(
+        path: String,
+        data: D,
+        files: Map<String, List<UploadFile>>
+    ): T = client.patch(path) {
+        setBody(multipartBody(data, files))
+    }.body()
 
     suspend fun registration(data: Registration): User =
         post("collections/users/records", data)
@@ -155,11 +155,10 @@ class PBApi(
         data: User,
         avatar: UploadFile? = null
     ): User =
-        multipart(
+        patchMultipart(
             path = "collections/users/records/${userId}",
             data = data,
             files = files("avatar" to avatar),
-            patch = true
         )
 
 
@@ -183,22 +182,20 @@ class PBApi(
         data: RequestPet,
         photo: UploadFile? = null
     ): Pet =
-        multipart(
+        postMultipart(
             path = "collections/pets/records",
             data = data,
             files = files("photo" to photo),
-            patch = false
         )
 
     suspend fun patchPet(
         idPet: String,
         data: RequestPet,
         photo: UploadFile? = null
-    ): Pet = multipart(
+    ): Pet = patchMultipart(
         path = "collections/pets/records/${idPet}",
         data = data,
-        files = files("photo" to photo),
-        patch = true
+        files = files("photo" to photo)
     )
 
     suspend fun deletePet(idPet: String): Unit {
@@ -231,8 +228,4 @@ class PBApi(
             "hvost/appointments/${id}/cancel",
             data
         )
-
-
-
-
 }
