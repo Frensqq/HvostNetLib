@@ -1,8 +1,6 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.appointmentsModel
 
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class AppointmentList(
     val page:Int,
     val perPage: Int,
@@ -10,3 +8,4 @@ data class AppointmentList(
     val totalItems: Int,
     val items: List<Appointment>
 )
+

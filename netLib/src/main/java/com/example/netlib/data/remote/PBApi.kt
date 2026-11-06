@@ -1,22 +1,22 @@
 package com.example.netlib.data.remote
 
-import com.example.netlib.domain.model.Appointment
-import com.example.netlib.domain.model.AppointmentList
-import com.example.netlib.domain.model.Cancel
-import com.example.netlib.domain.model.ClinicList
-import com.example.netlib.domain.model.DoctorList
-import com.example.netlib.domain.model.Pet
-import com.example.netlib.domain.model.PetList
-import com.example.netlib.domain.model.RequestAppointment
-import com.example.netlib.domain.model.RequestPet
-import com.example.netlib.domain.model.ServiceList
-import com.example.netlib.domain.model.Slots
-import com.example.netlib.domain.model.User
-import com.example.netlib.domain.model.system.AuthRequest
-import com.example.netlib.domain.model.system.AuthResponse
-import com.example.netlib.domain.model.system.Registration
-import com.example.netlib.domain.model.system.UploadFile
-import com.google.gson.stream.JsonToken
+import com.example.netlib.data.remote.DTO.AppointmentListResponse
+import com.example.netlib.data.remote.DTO.AppointmentRequest
+import com.example.netlib.data.remote.DTO.AppointmentResponse
+import com.example.netlib.data.remote.DTO.AuthRequest
+import com.example.netlib.data.remote.DTO.AuthResponse
+import com.example.netlib.data.remote.DTO.CancelRequest
+import com.example.netlib.data.remote.DTO.ClinicListResponse
+import com.example.netlib.data.remote.DTO.DoctorListResponse
+import com.example.netlib.data.remote.DTO.PetListResponse
+import com.example.netlib.data.remote.DTO.PetRequest
+import com.example.netlib.data.remote.DTO.PetResponse
+import com.example.netlib.data.remote.DTO.RegistrationRequest
+import com.example.netlib.data.remote.DTO.ServiceListResponse
+import com.example.netlib.data.remote.DTO.SlotListResponse
+import com.example.netlib.data.remote.DTO.UploadFile
+import com.example.netlib.data.remote.DTO.UserResponse
+import com.example.netlib.data.remote.DTO.UserUpdateRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -132,7 +132,7 @@ class PBApi(
         setBody(multipartBody(data, files))
     }.body()
 
-    suspend fun registration(data: Registration): User =
+    suspend fun registration(data: RegistrationRequest): UserResponse =
         post("collections/users/records", data)
 
     suspend fun authorization(data: AuthRequest): AuthResponse =
@@ -141,20 +141,16 @@ class PBApi(
     suspend fun refreshToken(): AuthResponse =
         post("collections/users/auth-refresh", buildJsonObject{})
 
-    suspend fun getProfile(userId: String): User =
+    suspend fun getProfile(userId: String): UserResponse =
         get("collections/users/records/${userId}")
 
 
-    fun saveToken(token: String? = null){
-        PBApiService.token = token
-    }
-    fun getToken() = PBApiService.token
 
     suspend fun patchProfile(
         userId: String,
-        data: User,
+        data: UserUpdateRequest,
         avatar: UploadFile? = null
-    ): User =
+    ): UserResponse =
         patchMultipart(
             path = "collections/users/records/${userId}",
             data = data,
@@ -162,26 +158,26 @@ class PBApi(
         )
 
 
-    suspend fun getServices(filter: String? = null): ServiceList =
+    suspend fun getServices(filter: String? = null): ServiceListResponse =
         get("collections/services/records", filter)
 
-    suspend fun getClinics(filter: String? = null): ClinicList =
+    suspend fun getClinics(filter: String? = null): ClinicListResponse =
         get("collections/clinics/records", filter)
 
-    suspend fun getDoctors(filter: String? = null): DoctorList =
+    suspend fun getDoctors(filter: String? = null): DoctorListResponse =
         get("collections/doctors/records",
             filter,
             "clinic"
         )
 
 
-    suspend fun getPet(filter: String? = null): PetList =
+    suspend fun getPet(filter: String? = null): PetListResponse =
         get("collections/pets/records", filter)
 
     suspend fun postPet(
-        data: RequestPet,
+        data: PetRequest,
         photo: UploadFile? = null
-    ): Pet =
+    ): PetResponse =
         postMultipart(
             path = "collections/pets/records",
             data = data,
@@ -190,9 +186,9 @@ class PBApi(
 
     suspend fun patchPet(
         idPet: String,
-        data: RequestPet,
+        data: PetRequest,
         photo: UploadFile? = null
-    ): Pet = patchMultipart(
+    ): PetResponse = patchMultipart(
         path = "collections/pets/records/${idPet}",
         data = data,
         files = files("photo" to photo)
@@ -202,7 +198,7 @@ class PBApi(
         delete("collections/pets/records/${idPet}")
     }
 
-    suspend fun getSlots(doctorId: String, date: String): Slots =
+    suspend fun getSlots(doctorId: String, date: String): SlotListResponse =
         client.get("hvost/slots") {
             parameter("doctor", doctorId)
             parameter("date", date)
@@ -210,20 +206,20 @@ class PBApi(
 
     suspend fun getAppointment(
         filter: String? = null,
-    ): AppointmentList =
+    ): AppointmentListResponse =
         get("collections/appointments/records",
             filter, "pet,doctor,service,clinic")
 
     suspend fun postAppointment(
-        data: RequestAppointment
-    ): Appointment =
+        data: AppointmentRequest
+    ): AppointmentResponse =
         post("collections/appointments/records", data)
 
 
     suspend fun cancelAppointment(
         id: String,
-        data: Cancel
-    ): Appointment =
+        data: CancelRequest
+    ): AppointmentResponse =
         post(
             "hvost/appointments/${id}/cancel",
             data

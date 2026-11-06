@@ -1,8 +1,11 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.appointmentsModel
 
-import kotlinx.serialization.Serializable
+import com.example.netlib.domain.model.catalogModel.Clinic
+import com.example.netlib.domain.model.catalogModel.Doctor
+import com.example.netlib.domain.model.catalogModel.Service
+import com.example.netlib.domain.model.petModel.Pet
 
-@Serializable
+
 data class AppointmentExpand(
     val pet: Pet? = null,
     val doctor: Doctor? = null,
@@ -10,7 +13,6 @@ data class AppointmentExpand(
     val clinic: Clinic? = null,
 )
 
-@Serializable
 data class Appointment(
     val id: String,
     val number: Int,

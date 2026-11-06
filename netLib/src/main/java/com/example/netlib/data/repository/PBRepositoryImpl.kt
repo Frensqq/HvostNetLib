@@ -1,26 +1,32 @@
 package com.example.netlib.data.repository
 
+import com.example.netlib.data.mapper.toDomain
+import com.example.netlib.data.mapper.toRequest
+import com.example.netlib.data.remote.DTO.ErrorResponse
+import com.example.netlib.data.remote.DTO.UploadFile
 import com.example.netlib.data.remote.PBApi
-import com.example.netlib.domain.model.Appointment
-import com.example.netlib.domain.model.AppointmentList
-import com.example.netlib.domain.model.Cancel
-import com.example.netlib.domain.model.ClinicList
-import com.example.netlib.domain.model.DoctorList
-import com.example.netlib.domain.model.Pet
-import com.example.netlib.domain.model.PetList
-import com.example.netlib.domain.model.RequestAppointment
-import com.example.netlib.domain.model.RequestPet
-import com.example.netlib.domain.model.ServiceList
-import com.example.netlib.domain.model.Slots
-import com.example.netlib.domain.model.User
-import com.example.netlib.domain.model.system.AuthRequest
-import com.example.netlib.domain.model.system.AuthResponse
-import com.example.netlib.domain.model.system.ErrorResponse
-import com.example.netlib.domain.model.system.NetworkResult
-import com.example.netlib.domain.model.system.Registration
-import com.example.netlib.domain.model.system.UploadFile
+import com.example.netlib.domain.model.NetworkResult
+import com.example.netlib.domain.model.appointmentsModel.Appointment
+import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
+import com.example.netlib.domain.model.appointmentsModel.AppointmentList
+import com.example.netlib.domain.model.appointmentsModel.Cancel
+import com.example.netlib.domain.model.appointmentsModel.Slots
+import com.example.netlib.domain.model.authModel.Auth
+import com.example.netlib.domain.model.authModel.AuthData
+import com.example.netlib.domain.model.authModel.Registration
+import com.example.netlib.domain.model.authModel.User
+import com.example.netlib.domain.model.catalogModel.ClinicList
+import com.example.netlib.domain.model.catalogModel.DoctorList
+import com.example.netlib.domain.model.catalogModel.ServiceList
+import com.example.netlib.domain.model.petModel.Pet
+import com.example.netlib.domain.model.petModel.PetData
+import com.example.netlib.domain.model.petModel.PetList
 import com.example.netlib.domain.network.Network
-import com.example.netlib.domain.repository.PBRepository
+import com.example.netlib.domain.repository.AppointmentsRepository
+import com.example.netlib.domain.repository.AuthRepository
+import com.example.netlib.domain.repository.CatalogRepository
+import com.example.netlib.domain.repository.PetRepository
+import com.example.netlib.domain.repository.ProfileRepository
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.bodyAsText
@@ -30,7 +36,7 @@ import kotlinx.serialization.json.Json
 class PBRepositoryImpl(
    private val  api: PBApi,
     private val networkMonitor: Network
-): PBRepository {
+): AppointmentsRepository, AuthRepository, CatalogRepository, PetRepository, ProfileRepository {
 
     private suspend fun <T> safeApiCall(apiCall: suspend () -> T): NetworkResult<T> {
         if (!networkMonitor.isConnected()) {
@@ -58,101 +64,94 @@ class PBRepositoryImpl(
         }
     }
 
-    override suspend fun registration(data: Registration): NetworkResult<User> = safeApiCall {
-        api.registration(data)
+    override suspend fun getAppointment(filter: String?): NetworkResult<AppointmentList> {
+        return safeApiCall {  api.getAppointment(filter).toDomain()}
     }
 
-    override suspend fun authorization(data: AuthRequest): NetworkResult<AuthResponse> =
-        safeApiCall {
-            api.authorization(data)
-        }
-
-    override suspend fun refreshToken(): NetworkResult<AuthResponse> = safeApiCall {
-        api.refreshToken()
+    override suspend fun postAppointment(data: AppointmentCreate): NetworkResult<Appointment> {
+        return  safeApiCall { api.postAppointment(data.toRequest()).toDomain() }
     }
 
-    override suspend fun getProfile(userId: String): NetworkResult<User> = safeApiCall {
-        api.getProfile(userId)
+    override suspend fun cancelAppointment(
+        id: String,
+        data: Cancel
+    ): NetworkResult<Appointment> {
+        return safeApiCall { api.cancelAppointment(id, data.toRequest()).toDomain() }
+    }
+
+    override suspend fun getSlots(
+        doctorId: String,
+        date: String
+    ): NetworkResult<Slots> {
+        return safeApiCall {  api.getSlots(doctorId,date).toDomain()}
+    }
+
+    override suspend fun registration(data: Registration): NetworkResult<User> {
+        return safeApiCall { api.registration(data.toRequest()).toDomain() }
+    }
+
+    override suspend fun authorization(data: AuthData): NetworkResult<Auth> {
+        return safeApiCall { api.authorization(data.toRequest()).toDomain()}
+    }
+
+    override suspend fun refreshToken(): NetworkResult<Auth> {
+        return  safeApiCall { api.refreshToken().toDomain() }
+    }
+
+    override fun saveToken(token: String?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getToken(): String? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getServices(filter: String?): NetworkResult<ServiceList> {
+        return safeApiCall { api.getServices(filter).toDomain() }
+    }
+
+    override suspend fun getClinics(filter: String?): NetworkResult<ClinicList> {
+        return safeApiCall { api.getClinics(filter).toDomain() }
+    }
+
+    override suspend fun getDoctors(filter: String?): NetworkResult<DoctorList> {
+        return  safeApiCall { api.getDoctors(filter).toDomain() }
+    }
+
+    override suspend fun getPet(filter: String?): NetworkResult<PetList> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun postPet(
+        data: PetData,
+        photo: UploadFile?
+    ): NetworkResult<Pet> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun patchPet(
+        idPet: String,
+        data: PetData,
+        photo: UploadFile?
+    ): NetworkResult<Pet> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deletePet(idPet: String): NetworkResult<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProfile(userId: String): NetworkResult<User> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun patchProfile(
         userId: String,
         data: User,
         avatar: UploadFile?
-    ): NetworkResult<User> = safeApiCall {
-        api.patchProfile(userId, data, avatar)
+    ): NetworkResult<User> {
+        TODO("Not yet implemented")
     }
-
-    override suspend fun getServices(filter: String?): NetworkResult<ServiceList> = safeApiCall {
-        api.getServices(filter)
-    }
-
-    override suspend fun getClinics(filter: String?): NetworkResult<ClinicList> = safeApiCall {
-        api.getClinics(filter)
-    }
-
-    override suspend fun getDoctors(filter: String?): NetworkResult<DoctorList> = safeApiCall {
-        api.getDoctors(filter)
-    }
-
-    override suspend fun getPet(filter: String?): NetworkResult<PetList> = safeApiCall {
-        api.getPet(filter)
-    }
-
-    override suspend fun postPet(
-        data: RequestPet,
-        photo: UploadFile?
-    ): NetworkResult<Pet> = safeApiCall {
-        api.postPet(data, photo)
-    }
-
-    override suspend fun patchPet(
-        idPet: String,
-        data: RequestPet,
-        photo: UploadFile?
-    ): NetworkResult<Pet> = safeApiCall {
-        api.patchPet(idPet, data, photo)
-    }
-
-    override suspend fun deletePet(idPet: String): NetworkResult<Unit> = safeApiCall {
-        api.deletePet(idPet)
-    }
-
-    override suspend fun getSlots(
-        doctorId: String,
-        date: String
-    ): NetworkResult<Slots> = safeApiCall {
-        api.getSlots(
-            doctorId,
-            date
-        )
-    }
-
-    override suspend fun getAppointment(filter: String?): NetworkResult<AppointmentList> =
-        safeApiCall {
-            api.getAppointment(filter)
-        }
-
-    override suspend fun postAppointment(data: RequestAppointment): NetworkResult<Appointment> =
-        safeApiCall {
-            api.postAppointment(data)
-        }
-
-    override suspend fun cancelAppointment(
-        id: String,
-        data: Cancel
-    ): NetworkResult<Appointment> = safeApiCall {
-        api.cancelAppointment(id, data)
-    }
-    override fun saveToken(
-        token: String?
-    ){
-        api.saveToken(token)
-    }
-    override fun getToken() = api.getToken()
-
-
-
 
 
 }

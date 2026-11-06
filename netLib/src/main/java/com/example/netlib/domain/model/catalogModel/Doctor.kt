@@ -1,12 +1,11 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.catalogModel
 
-import kotlinx.serialization.Serializable
-@Serializable
+
+
 data class DoctorExpand(
     val clinic : Clinic
 )
 
-@Serializable
 data class Doctor(
     val id: String,
     val name: String,
@@ -18,4 +17,12 @@ data class Doctor(
     val workDays: List<Int>,
     val photo: String,
     val expand: DoctorExpand
+)
+
+data class DoctorList(
+    val page:Int,
+    val perPage: Int,
+    val totalPages: Int,
+    val totalItems: Int,
+    val items: List<Doctor>
 )

@@ -1,8 +1,5 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.petModel
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Pet(
     val id: String,
     val owner: String,

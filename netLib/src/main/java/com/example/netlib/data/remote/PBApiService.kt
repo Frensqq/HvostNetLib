@@ -20,7 +20,7 @@ object PBApiService {
     const val BASE_URL = "http://frens-project.tech:8090/api/"
     const val WS_URL = "ws://frens-project.tech:8091/ws"
 
-    var token: String? = null
+    private var token: String? = null
 
     val json = Json {
         ignoreUnknownKeys = true

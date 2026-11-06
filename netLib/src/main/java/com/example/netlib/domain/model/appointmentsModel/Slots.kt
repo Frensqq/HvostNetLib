@@ -1,8 +1,5 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.appointmentsModel
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Slots(
     val doctor: String,
     val date: String,

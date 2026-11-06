@@ -1,8 +1,5 @@
-package com.example.netlib.domain.model.system
+package com.example.netlib.domain.model.authModel
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Registration(
     val email: String,
     val password: String,

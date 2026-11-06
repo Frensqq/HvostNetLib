@@ -1,8 +1,5 @@
-package com.example.netlib.domain.model
+package com.example.netlib.domain.model.authModel
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class User(
     val id: String,
     val email: String,
