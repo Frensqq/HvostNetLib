@@ -5,10 +5,13 @@ import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.petModel.Pet
 import com.example.netlib.domain.model.petModel.PetData
 import com.example.netlib.domain.model.petModel.PetList
+import com.example.netlib.domain.model.query.PetQuery
 
 
 interface PetRepository {
-    suspend fun getPet(filter: String? = null): NetworkResult<PetList>
+    suspend fun getPet(
+        query: PetQuery?
+    ): NetworkResult<PetList>
 
     suspend fun postPet(
         data: PetData,

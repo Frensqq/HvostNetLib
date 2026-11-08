@@ -8,19 +8,24 @@ import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.petModel.Pet
 import com.example.netlib.domain.model.petModel.PetData
 import com.example.netlib.domain.model.petModel.PetList
+import com.example.netlib.domain.model.query.PetQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.PetRepository
 
-class PetRepositoryImpl (
+class PetRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), PetRepository {
 
     override suspend fun getPet(
-        filter: String?
+        query: PetQuery?
     ): NetworkResult<PetList> {
         return safeApiCall {
-            api.getPet(filter).toDomain()
+            api.getPet(
+                page = query?.page,
+                perPage = query?.perPage,
+                sort = query?.sort
+            ).toDomain()
         }
     }
 

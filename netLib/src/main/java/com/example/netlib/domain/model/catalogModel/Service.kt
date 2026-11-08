@@ -6,7 +6,7 @@ data class Service(
     val code: String,
     val name: String,
     val price: Int,
-    val duration: Int,
+    val durationMin: Int,
     val sort: Int,
 )
 

@@ -1,6 +1,7 @@
 package com.example.netlib.data.repository
 
 import com.example.netlib.data.mapper.toDomain
+import com.example.netlib.data.mapper.toFilter
 import com.example.netlib.data.mapper.toRequest
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.domain.model.NetworkResult
@@ -9,23 +10,25 @@ import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
 import com.example.netlib.domain.model.appointmentsModel.AppointmentList
 import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.appointmentsModel.Slots
-import com.example.netlib.domain.model.catalogModel.ClinicList
-import com.example.netlib.domain.model.catalogModel.DoctorList
-import com.example.netlib.domain.model.catalogModel.ServiceList
+import com.example.netlib.domain.model.query.AppointmentQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.AppointmentsRepository
-import com.example.netlib.domain.repository.CatalogRepository
 
-class AppointmentRepositoryImpl (
+class AppointmentRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
-)  : PBRepositoryBase(networkMonitor), AppointmentsRepository {
+) : PBRepositoryBase(networkMonitor), AppointmentsRepository {
 
     override suspend fun getAppointment(
-        filter: String?
+        query: AppointmentQuery?
     ): NetworkResult<AppointmentList> {
         return safeApiCall {
-            api.getAppointment(filter).toDomain()
+            api.getAppointment(
+                filter = query?.toFilter(),
+                sort = query?.sort,
+                page = query?.page,
+                perPage = query?.perPage
+            ).toDomain()
         }
     }
 

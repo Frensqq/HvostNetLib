@@ -20,7 +20,7 @@ fun ServiceResponse.toDomain(): Service =
         code,
         name,
         price,
-        duration,
+        durationMin  ,
         sort = sort)
 
 

@@ -1,40 +1,51 @@
 package com.example.netlib.data.repository
 
 import com.example.netlib.data.mapper.toDomain
+import com.example.netlib.data.mapper.toFilter
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.catalogModel.ClinicList
 import com.example.netlib.domain.model.catalogModel.DoctorList
 import com.example.netlib.domain.model.catalogModel.ServiceList
+import com.example.netlib.domain.model.query.ClinicQuery
+import com.example.netlib.domain.model.query.DoctorQuery
+import com.example.netlib.domain.model.query.ServiceQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.CatalogRepository
 
-class CatalogRepositoryImpl (
+class CatalogRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), CatalogRepository {
 
     override suspend fun getServices(
-        filter: String?
+        query: ServiceQuery?
     ): NetworkResult<ServiceList> {
         return safeApiCall {
-            api.getServices(filter).toDomain()
+            api.getServices(
+                sort = query?.sort
+            ).toDomain()
         }
     }
 
     override suspend fun getClinics(
-        filter: String?
+        query: ClinicQuery?
     ): NetworkResult<ClinicList> {
         return safeApiCall {
-            api.getClinics(filter).toDomain()
+            api.getClinics(
+                sort = query?.sort
+            ).toDomain()
         }
     }
 
     override suspend fun getDoctors(
-        filter: String?
+        query: DoctorQuery?
     ): NetworkResult<DoctorList> {
         return safeApiCall {
-            api.getDoctors(filter).toDomain()
+            api.getDoctors(
+                filter = query?.toFilter(),
+                sort = query?.sort
+            ).toDomain()
         }
     }
 }

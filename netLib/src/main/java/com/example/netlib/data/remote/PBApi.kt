@@ -51,11 +51,16 @@ class PBApi(
     private suspend inline fun <reified T> get(
         path: String,
         filter: String? = null,
-        expand: String? = null
-    ) : T = client.get(path){
+        expand: String? = null,
+        sort: String? = null,
+        page: Int? = null,
+        perPage: Int? = null
+    ): T = client.get(path) {
         filter?.let { parameter("filter", it) }
         expand?.let { parameter("expand", it) }
-
+        sort?.let { parameter("sort", it) }
+        page?.let { parameter("page", it) }
+        perPage?.let { parameter("perPage", it) }
     }.body()
 
     private suspend inline fun <reified T> post(
@@ -158,21 +163,41 @@ class PBApi(
         )
 
 
-    suspend fun getServices(filter: String? = null): ServiceListResponse =
-        get("collections/services/records", filter)
+    suspend fun getServices(sort: String? = null): ServiceListResponse =
+        get(
+            path = "collections/services/records",
+            sort = sort
+        )
 
-    suspend fun getClinics(filter: String? = null): ClinicListResponse =
-        get("collections/clinics/records", filter)
+    suspend fun getClinics(sort: String? = null): ClinicListResponse =
+        get(
+            path = "collections/clinics/records",
+            sort = sort
+        )
 
-    suspend fun getDoctors(filter: String? = null): DoctorListResponse =
-        get("collections/doctors/records",
-            filter,
-            "clinic"
+    suspend fun getDoctors(
+        filter: String? = null,
+        sort: String? = null
+    ): DoctorListResponse =
+        get(
+            path = "collections/doctors/records",
+            filter = filter,
+            expand = "clinic",
+            sort = sort
         )
 
 
-    suspend fun getPet(filter: String? = null): PetListResponse =
-        get("collections/pets/records", filter)
+    suspend fun getPet(
+        page: Int? = null,
+        perPage: Int? = null,
+        sort: String? = null
+    ): PetListResponse =
+        get(
+            path = "collections/pets/records",
+            page = page,
+            perPage = perPage,
+            sort = sort
+        )
 
     suspend fun postPet(
         data: PetRequest,
@@ -206,9 +231,18 @@ class PBApi(
 
     suspend fun getAppointment(
         filter: String? = null,
+        sort: String? = null,
+        page: Int? = null,
+        perPage: Int? = null
     ): AppointmentListResponse =
-        get("collections/appointments/records",
-            filter, "pet,doctor,service,clinic")
+        get(
+            path = "collections/appointments/records",
+            filter = filter,
+            expand = "pet,doctor,service,clinic",
+            sort = sort,
+            page = page,
+            perPage = perPage
+        )
 
     suspend fun postAppointment(
         data: AppointmentRequest

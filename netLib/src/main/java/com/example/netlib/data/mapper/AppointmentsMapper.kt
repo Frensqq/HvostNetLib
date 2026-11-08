@@ -1,5 +1,6 @@
 package com.example.netlib.data.mapper
 
+import com.example.netlib.data.remote.DTO.AppointmentExpandResponse
 import com.example.netlib.data.remote.DTO.AppointmentListResponse
 import com.example.netlib.data.remote.DTO.AppointmentRequest
 import com.example.netlib.data.remote.DTO.AppointmentResponse
@@ -8,6 +9,7 @@ import com.example.netlib.data.remote.DTO.SlotListResponse
 import com.example.netlib.data.remote.DTO.SlotResponse
 import com.example.netlib.domain.model.appointmentsModel.Appointment
 import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
+import com.example.netlib.domain.model.appointmentsModel.AppointmentExpand
 import com.example.netlib.domain.model.appointmentsModel.AppointmentList
 import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.appointmentsModel.Slot
@@ -38,6 +40,17 @@ fun AppointmentListResponse.toDomain(): AppointmentList{
         items =  items.map { it.toDomain() }
     )
 }
+
+fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
+    return AppointmentExpand(
+        pet?.toDomain(),
+        doctor?.toDomain(),
+        service?.toDomain(),
+        clinic?.toDomain()
+    )
+}
+
+
 fun AppointmentResponse.toDomain(): Appointment {
     return Appointment(
         id = id,
@@ -45,6 +58,7 @@ fun AppointmentResponse.toDomain(): Appointment {
         user = user,
         pet = pet,
         doctor = doctor,
+        start = start,
         service = service,
         clinic = clinic,
         status = status,
@@ -52,7 +66,7 @@ fun AppointmentResponse.toDomain(): Appointment {
         cancelReason = cancelReason,
         created = created,
         updated = updated,
-        //expand = expand.toDomain()
+        expand = expand?.toDomain()
     )
 }
 
@@ -73,10 +87,3 @@ fun SlotListResponse.toDomain(): Slots{
         slots = slots.map { it.toDomain() }
     )
 }
-
-//fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
-//    return AppointmentExpand(
-//        pet =pet,
-//
-//    )
-//}
