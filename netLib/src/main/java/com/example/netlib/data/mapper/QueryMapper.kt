@@ -19,18 +19,26 @@ fun DoctorQuery.toFilter(): String? {
 }
 
 fun AppointmentQuery.toFilter(): String? {
-    val values = statuses
+    val filters = mutableListOf<String>()
+
+    statuses
         ?.filter { it.isNotBlank() }
         ?.distinct()
-        ?: return null
+        ?.takeIf { it.isNotEmpty() }
+        ?.let { values ->
+            filters.add(
+                values.joinToString(
+                    separator = " || ",
+                    prefix = "(",
+                    postfix = ")"
+                ) { "status='$it'" }
+            )
+        }
 
-    if (values.isEmpty()) return null
-
-    return values.joinToString(
-        separator = " || ",
-        prefix = "(",
-        postfix = ")"
-    ) {
-        "status='$it'"
+    petId?.takeIf { it.isNotBlank() }?.let {
+        filters.add("pet='$it'")
     }
+
+    return filters.takeIf { it.isNotEmpty() }
+        ?.joinToString(" && ")
 }

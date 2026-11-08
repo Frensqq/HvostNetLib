@@ -11,6 +11,10 @@ sealed class NetworkResult<out T> {
         val errorResponse: ApiError
     ) : NetworkResult<Nothing>()
 
+    data class SerializationError(
+        val message: String
+    ) : NetworkResult<Nothing>()
+
     object NoInternet : NetworkResult<Nothing>()
 
     object Timeout : NetworkResult<Nothing>()

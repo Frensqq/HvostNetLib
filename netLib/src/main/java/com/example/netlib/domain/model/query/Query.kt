@@ -17,12 +17,13 @@ data class DoctorQuery(
 data class PetQuery(
     val page: Int? = null,
     val perPage: Int? = null,
-    val sort: String? = null
+    val sort: String? = "name"
 )
 
 data class AppointmentQuery(
     val statuses: List<String>? = null,
-    val sort: String? = null,
+    val petId: String? = null,
+    val sort: String? = "-start",
     val page: Int? = null,
     val perPage: Int? = null
 )

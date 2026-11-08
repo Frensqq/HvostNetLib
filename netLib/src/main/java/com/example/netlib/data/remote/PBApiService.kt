@@ -34,7 +34,11 @@ internal class PBApiService(
                 }
 
                 install(Logging) {
-                    level = LogLevel.ALL
+                    level = LogLevel.HEADERS
+
+                    sanitizeHeader { header ->
+                        header == HttpHeaders.Authorization
+                    }
                 }
 
                 install(HttpTimeout) {
