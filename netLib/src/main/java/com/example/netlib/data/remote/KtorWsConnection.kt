@@ -9,7 +9,6 @@ import io.ktor.websocket.DefaultWebSocketSession
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
-import io.ktor.websocket.send
 
 class KtorWsConnection(
     private val httpClient: HttpClient,

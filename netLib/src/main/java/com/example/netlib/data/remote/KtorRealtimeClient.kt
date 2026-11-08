@@ -50,7 +50,10 @@ class KtorRealtimeClient(
                     isConnected = true
 
                     val closeCode = connection.listen { message ->
-                        val event = parse(message)
+                        val event = parse(
+                            message,
+                            json
+                        )
 
                         if (event is ErrorEvent && event.code == "unauthorized") {
                             lastCloseCode = 4001

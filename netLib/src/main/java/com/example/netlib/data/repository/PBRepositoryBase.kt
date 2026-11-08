@@ -1,6 +1,8 @@
 package com.example.netlib.data.repository
 
+import com.example.netlib.data.mapper.toDomain
 import com.example.netlib.data.remote.DTO.ErrorResponse
+import com.example.netlib.domain.model.ApiError
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.network.Network
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -24,16 +26,24 @@ abstract class PBRepositoryBase (
         } catch (e: IOException) {
             NetworkResult.NoInternet
         } catch (e: ResponseException) {
-            val text = runCatching { e.response.bodyAsText() }.getOrDefault("")
+            val text = runCatching {
+                e.response.bodyAsText()
+            }.getOrDefault("")
+
             val error = runCatching {
-                Json { ignoreUnknownKeys = true }.decodeFromString<ErrorResponse>(text)
+                Json { ignoreUnknownKeys = true }
+                    .decodeFromString<ErrorResponse>(text)
+                    .toDomain()
             }.getOrElse {
-                ErrorResponse(status = e.response.status.value, message = e.message.orEmpty())
+                ApiError(
+                    status = e.response.status.value,
+                    message = e.message.orEmpty()
+                )
             }
             NetworkResult.Error(error)
         } catch (e: Exception) {
             NetworkResult.Error(
-                ErrorResponse(status = -1, message = e.message ?: "Unknown error")
+                ApiError(status = -1, message = e.message ?: "Unknown error")
             )
         }
     }

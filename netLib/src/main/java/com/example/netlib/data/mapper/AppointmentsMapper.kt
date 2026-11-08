@@ -1,6 +1,5 @@
 package com.example.netlib.data.mapper
 
-import com.example.netlib.data.remote.DTO.AppointmentExpandResponse
 import com.example.netlib.data.remote.DTO.AppointmentListResponse
 import com.example.netlib.data.remote.DTO.AppointmentRequest
 import com.example.netlib.data.remote.DTO.AppointmentResponse
@@ -9,7 +8,6 @@ import com.example.netlib.data.remote.DTO.SlotListResponse
 import com.example.netlib.data.remote.DTO.SlotResponse
 import com.example.netlib.domain.model.appointmentsModel.Appointment
 import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
-import com.example.netlib.domain.model.appointmentsModel.AppointmentExpand
 import com.example.netlib.domain.model.appointmentsModel.AppointmentList
 import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.appointmentsModel.Slot

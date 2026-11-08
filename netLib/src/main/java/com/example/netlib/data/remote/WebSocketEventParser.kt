@@ -11,13 +11,17 @@ import com.example.netlib.domain.model.websocket.SlotTakenEvent
 import com.example.netlib.domain.model.websocket.StatusEvent
 import com.example.netlib.domain.model.websocket.SubscribedEvent
 import com.example.netlib.domain.model.websocket.UnsubscribedEvent
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 
-fun parse(message: String): Any? {
+fun parse(
+    message: String,
+    json: Json
+): Any? {
     return runCatching {
-        val json = PBApiService.json
+        val json = json
         val element = json.parseToJsonElement(message)
         val type = (element as? JsonObject)
             ?.get("type")
