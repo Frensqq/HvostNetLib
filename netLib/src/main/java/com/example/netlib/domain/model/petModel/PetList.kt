@@ -7,5 +7,5 @@ data class PetList(
     val perPage: Int,
     val totalPages: Int,
     val totalItems: Int,
-    val items: List<PetResponse>
+    val items: List<Pet>
 )

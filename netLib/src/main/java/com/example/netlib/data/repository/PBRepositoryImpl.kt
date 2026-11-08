@@ -119,14 +119,14 @@ class PBRepositoryImpl(
     }
 
     override suspend fun getPet(filter: String?): NetworkResult<PetList> {
-        TODO("Not yet implemented")
+      return safeApiCall {   api.getPet(filter).toDomain() }
     }
 
     override suspend fun postPet(
         data: PetData,
         photo: UploadFile?
     ): NetworkResult<Pet> {
-        TODO("Not yet implemented")
+        return safeApiCall { api.postPet(data.toRequest(), photo).toDomain() }
     }
 
     override suspend fun patchPet(
@@ -134,15 +134,19 @@ class PBRepositoryImpl(
         data: PetData,
         photo: UploadFile?
     ): NetworkResult<Pet> {
-        TODO("Not yet implemented")
+        return safeApiCall { api.patchPet(
+            idPet,
+            data.toRequest(),
+            photo
+        ).toDomain() }
     }
 
     override suspend fun deletePet(idPet: String): NetworkResult<Unit> {
-        TODO("Not yet implemented")
+        return safeApiCall { api.deletePet(idPet) }
     }
 
     override suspend fun getProfile(userId: String): NetworkResult<User> {
-        TODO("Not yet implemented")
+        return safeApiCall { api.getProfile(userId = userId).toDomain() }
     }
 
     override suspend fun patchProfile(
@@ -150,8 +154,12 @@ class PBRepositoryImpl(
         data: User,
         avatar: UploadFile?
     ): NetworkResult<User> {
-        TODO("Not yet implemented")
+        return safeApiCall {
+            api.patchProfile(
+                userId = userId,
+                data = data.toRequest(),
+                avatar = avatar
+            ).toDomain()
+        }
     }
-
-
 }
