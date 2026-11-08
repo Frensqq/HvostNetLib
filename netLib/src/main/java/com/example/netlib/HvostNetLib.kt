@@ -6,7 +6,11 @@ import com.example.netlib.data.remote.KtorRealtimeClient
 import com.example.netlib.data.remote.KtorWsConnection
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.data.remote.PBApiService
-import com.example.netlib.data.repository.PBRepositoryImpl
+import com.example.netlib.data.repository.AppointmentRepositoryImpl
+import com.example.netlib.data.repository.AuthRepositoryImpl
+import com.example.netlib.data.repository.CatalogRepositoryImpl
+import com.example.netlib.data.repository.PetRepositoryImpl
+import com.example.netlib.data.repository.ProfileRepositoryImpl
 import com.example.netlib.domain.repository.AppointmentsRepository
 import com.example.netlib.domain.repository.AuthRepository
 import com.example.netlib.domain.repository.CatalogRepository
@@ -30,20 +34,22 @@ class HvostNetLib(
 
     private val api = PBApi(httpClient)
 
-    private val repository = PBRepositoryImpl(
-        api = api,
-        networkMonitor = NetworkImpl(context.applicationContext)
-    )
+    private val networkMonitor = NetworkImpl(context.applicationContext)
 
-    val authRepository: AuthRepository = repository
+    val authRepository: AuthRepository =
+        AuthRepositoryImpl(api, networkMonitor)
 
-    val profileRepository: ProfileRepository = repository
+    val profileRepository: ProfileRepository =
+        ProfileRepositoryImpl(api, networkMonitor)
 
-    val catalogRepository: CatalogRepository = repository
+    val catalogRepository: CatalogRepository =
+        CatalogRepositoryImpl(api, networkMonitor)
 
-    val petRepository: PetRepository = repository
+    val petRepository: PetRepository =
+        PetRepositoryImpl(api, networkMonitor)
 
-    val appointmentsRepository: AppointmentsRepository = repository
+    val appointmentsRepository: AppointmentsRepository =
+        AppointmentRepositoryImpl(api, networkMonitor)
 
     val realtimeClient: HvostRealtimeClient = KtorRealtimeClient(
         connection = KtorWsConnection(

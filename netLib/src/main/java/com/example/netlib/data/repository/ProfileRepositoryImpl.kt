@@ -2,46 +2,38 @@ package com.example.netlib.data.repository
 
 import com.example.netlib.data.mapper.toDomain
 import com.example.netlib.data.mapper.toRequest
+import com.example.netlib.data.remote.DTO.UploadFile
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.domain.model.NetworkResult
-import com.example.netlib.domain.model.authModel.Auth
-import com.example.netlib.domain.model.authModel.AuthData
-import com.example.netlib.domain.model.authModel.Registration
 import com.example.netlib.domain.model.authModel.User
 import com.example.netlib.domain.network.Network
-import com.example.netlib.domain.repository.AuthRepository
+import com.example.netlib.domain.repository.ProfileRepository
 
-class AuthRepositoryImpl(
+class ProfileRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
-) : PBRepositoryBase(networkMonitor), AuthRepository {
-    override suspend fun registration(
-        data: Registration
+) : PBRepositoryBase(networkMonitor), ProfileRepository {
+
+    override suspend fun getProfile(
+        userId: String
     ): NetworkResult<User> {
         return safeApiCall {
-            api.registration(data.toRequest()).toDomain()
+            api.getProfile(userId).toDomain()
         }
     }
 
-    override suspend fun authorization(
-        data: AuthData
-    ): NetworkResult<Auth> {
+    override suspend fun patchProfile(
+        userId: String,
+        data: User,
+        avatar: UploadFile?
+    ): NetworkResult<User> {
         return safeApiCall {
-            api.authorization(data.toRequest()).toDomain()
+            api.patchProfile(
+                userId = userId,
+                data = data.toRequest(),
+                avatar = avatar
+            ).toDomain()
         }
     }
 
-    override suspend fun refreshToken(): NetworkResult<Auth> {
-        return safeApiCall {
-            api.refreshToken().toDomain()
-        }
-    }
-
-    override fun saveToken(token: String?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getToken(): String? {
-        TODO("Not yet implemented")
-    }
 }

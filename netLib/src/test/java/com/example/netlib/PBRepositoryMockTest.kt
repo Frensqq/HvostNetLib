@@ -1,7 +1,6 @@
 package com.example.netlib
 
 import com.example.netlib.data.remote.PBApi
-import com.example.netlib.data.repository.PBRepositoryImpl
 import com.example.netlib.domain.model.RequestAppointment
 import com.example.netlib.domain.model.Slots
 import com.example.netlib.domain.model.system.AuthRequest
