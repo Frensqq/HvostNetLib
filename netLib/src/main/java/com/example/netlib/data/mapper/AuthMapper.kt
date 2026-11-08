@@ -9,6 +9,7 @@ import com.example.netlib.domain.model.authModel.Auth
 import com.example.netlib.domain.model.authModel.AuthData
 import com.example.netlib.domain.model.authModel.Registration
 import com.example.netlib.domain.model.authModel.User
+import com.example.netlib.domain.model.authModel.UserUpdateData
 
 fun Registration.toRequest(): RegistrationRequest {
     return RegistrationRequest(
@@ -46,5 +47,5 @@ fun AuthResponse.toDomain(): Auth =
     )
 
 
-fun User.toRequest(): UserUpdateRequest =
-    UserUpdateRequest(name, phone, avatar)
+fun UserUpdateData.toRequest(): UserUpdateRequest =
+    UserUpdateRequest(name, phone)

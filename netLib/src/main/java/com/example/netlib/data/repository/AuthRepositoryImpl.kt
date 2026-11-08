@@ -3,6 +3,7 @@ package com.example.netlib.data.repository
 import com.example.netlib.data.mapper.toDomain
 import com.example.netlib.data.mapper.toRequest
 import com.example.netlib.data.remote.PBApi
+import com.example.netlib.data.storage.TokenStorage
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.authModel.Auth
 import com.example.netlib.domain.model.authModel.AuthData
@@ -13,8 +14,10 @@ import com.example.netlib.domain.repository.AuthRepository
 
 class AuthRepositoryImpl(
     private val api: PBApi,
-    networkMonitor: Network
+    networkMonitor: Network,
+    private val tokenStorage: TokenStorage
 ) : PBRepositoryBase(networkMonitor), AuthRepository {
+
     override suspend fun registration(
         data: Registration
     ): NetworkResult<User> {
@@ -27,21 +30,29 @@ class AuthRepositoryImpl(
         data: AuthData
     ): NetworkResult<Auth> {
         return safeApiCall {
-            api.authorization(data.toRequest()).toDomain()
+            val response = api.authorization(data.toRequest())
+
+            tokenStorage.saveToken(response.token)
+
+            response.toDomain()
         }
     }
 
     override suspend fun refreshToken(): NetworkResult<Auth> {
         return safeApiCall {
-            api.refreshToken().toDomain()
+            val response = api.refreshToken()
+
+            tokenStorage.saveToken(response.token)
+
+            response.toDomain()
         }
     }
 
     override fun saveToken(token: String?) {
-        TODO("Not yet implemented")
+        tokenStorage.saveToken(token)
     }
 
     override fun getToken(): String? {
-        TODO("Not yet implemented")
+        return tokenStorage.getToken()
     }
 }
