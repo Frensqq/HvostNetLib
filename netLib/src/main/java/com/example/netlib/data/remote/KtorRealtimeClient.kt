@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 
 class KtorRealtimeClient(
-    private val connection: WsConnection
+    private val connection: WsConnection,
+    private val json: Json
 ) : HvostRealtimeClient {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -61,7 +63,7 @@ class KtorRealtimeClient(
                             val date = activeDate
 
                             if (doctor != null && date != null) {
-                                val subscribeMessage = PBApiService.json.encodeToString(
+                                val subscribeMessage = json.encodeToString(
                                     SubscribeOutgoing(
                                         doctor = doctor,
                                         date = date
@@ -111,12 +113,12 @@ class KtorRealtimeClient(
     }
 
     override suspend fun ping() {
-        val message = PBApiService.json.encodeToString(PingOutgoing())
+        val message = json.encodeToString(PingOutgoing())
         connection.send(message)
     }
 
     override suspend fun subscribeSlots(doctor: String, date: String) {
-        val message = PBApiService.json.encodeToString(
+        val message = json.encodeToString(
             SubscribeOutgoing(
                 doctor = doctor,
                 date = date
@@ -130,7 +132,7 @@ class KtorRealtimeClient(
     }
 
     override suspend fun unsubscribeSlots(doctor: String?, date: String?) {
-        val message = PBApiService.json.encodeToString(
+        val message = json.encodeToString(
             UnsubscribeOutgoing(
                 doctor = doctor,
                 date = date
@@ -144,7 +146,7 @@ class KtorRealtimeClient(
     }
 
     override suspend fun requestQueueDemo(appointmentId: String) {
-        val message = PBApiService.json.encodeToString(
+        val message = json.encodeToString(
             QueueDemoOutgoing(appointmentId = appointmentId)
         )
 
