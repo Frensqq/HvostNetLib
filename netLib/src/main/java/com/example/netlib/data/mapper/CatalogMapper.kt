@@ -70,7 +70,7 @@ fun DoctorResponse.toDomain(): Doctor =
         services,
         workDays,
         photo,
-        expand = expand.toDomain())
+        expand = expand?.toDomain())
 
 
 fun DoctorListResponse.toDomain(): DoctorList =

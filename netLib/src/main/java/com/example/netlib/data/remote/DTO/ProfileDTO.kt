@@ -18,6 +18,7 @@ data class UserResponse(
 
 @Serializable
 data class UserUpdateRequest(
-    val name: String,
-    val phone: String,
-    val avatar: String)
+    val name: String? = null,
+    val phone: String? = null,
+    val avatar: String? = null
+)

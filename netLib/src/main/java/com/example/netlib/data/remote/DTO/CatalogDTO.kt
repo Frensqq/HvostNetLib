@@ -62,7 +62,7 @@ data class DoctorResponse(
     val services : List<String>,
     val workDays: List<Int>,
     val photo: String,
-    val expand: DoctorExpandResponse
+    val expand: DoctorExpandResponse? = null
 )
 
 @Serializable
