@@ -42,6 +42,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    testImplementation("org.json:json:20240303")
+
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-client-mock:2.3.12")
