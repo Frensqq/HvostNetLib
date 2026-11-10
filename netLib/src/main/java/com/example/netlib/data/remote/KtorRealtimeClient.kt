@@ -1,6 +1,13 @@
+
 package com.example.netlib.data.remote
 
-import com.example.netlib.domain.model.websocket.*
+import com.example.netlib.data.remote.DTO.websocketDTO.PingOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.QueueDemoOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.SubscribeOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.UnsubscribeOutgoingDTO
+import com.example.netlib.domain.model.websocket.ErrorEvent
+import com.example.netlib.domain.model.websocket.HelloEvent
+import com.example.netlib.domain.model.websocket.WebSocketEvent
 import com.example.netlib.domain.websocket.HvostRealtimeClient
 import com.example.netlib.domain.websocket.WsConnection
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 class KtorRealtimeClient(
     private val connection: WsConnection,
@@ -24,9 +32,9 @@ class KtorRealtimeClient(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val _events = MutableSharedFlow<Any>(replay = 1)
+    private val _events = MutableSharedFlow<WebSocketEvent>(replay = 1)
 
-    override val events: Flow<Any> = _events.asSharedFlow()
+    override val events: Flow<WebSocketEvent> = _events.asSharedFlow()
 
     private var lastCloseCode: Int? = null
     private var listenerJob: Job? = null
@@ -50,10 +58,7 @@ class KtorRealtimeClient(
                     isConnected = true
 
                     val closeCode = connection.listen { message ->
-                        val event = parse(
-                            message,
-                            json
-                        )
+                        val event = parse(message, json)
 
                         if (event is ErrorEvent && event.code == "unauthorized") {
                             lastCloseCode = 4001
@@ -67,7 +72,7 @@ class KtorRealtimeClient(
 
                             if (doctor != null && date != null) {
                                 val subscribeMessage = json.encodeToString(
-                                    SubscribeOutgoing(
+                                    SubscribeOutgoingDTO(
                                         doctor = doctor,
                                         date = date
                                     )
@@ -100,7 +105,7 @@ class KtorRealtimeClient(
 
                 if (!isActive || lastCloseCode == 4001) break
 
-                delay(retryDelay)
+                delay(retryDelay.milliseconds)
                 retryDelay = nextReconnectDelay(retryDelay)
             }
 
@@ -116,13 +121,13 @@ class KtorRealtimeClient(
     }
 
     override suspend fun ping() {
-        val message = json.encodeToString(PingOutgoing())
+        val message = json.encodeToString(PingOutgoingDTO())
         connection.send(message)
     }
 
     override suspend fun subscribeSlots(doctor: String, date: String) {
         val message = json.encodeToString(
-            SubscribeOutgoing(
+            SubscribeOutgoingDTO(
                 doctor = doctor,
                 date = date
             )
@@ -136,7 +141,7 @@ class KtorRealtimeClient(
 
     override suspend fun unsubscribeSlots(doctor: String?, date: String?) {
         val message = json.encodeToString(
-            UnsubscribeOutgoing(
+            UnsubscribeOutgoingDTO(
                 doctor = doctor,
                 date = date
             )
@@ -150,7 +155,7 @@ class KtorRealtimeClient(
 
     override suspend fun requestQueueDemo(appointmentId: String) {
         val message = json.encodeToString(
-            QueueDemoOutgoing(appointmentId = appointmentId)
+            QueueDemoOutgoingDTO(appointmentId = appointmentId)
         )
 
         connection.send(message)

@@ -1,15 +1,12 @@
-package com.example.netlib.domain.model.websocket
-
+package com.example.netlib.data.remote.DTO.websocketDTO
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PingOutgoing(
-    val type: String = "ping"
-)
+data class PingOutgoingDTO(val type: String = "ping")
 
 @Serializable
-data class SubscribeOutgoing(
+data class SubscribeOutgoingDTO(
     val type: String = "subscribe",
     val topic: String = "slots",
     val doctor: String,
@@ -17,7 +14,7 @@ data class SubscribeOutgoing(
 )
 
 @Serializable
-data class UnsubscribeOutgoing(
+data class UnsubscribeOutgoingDTO(
     val type: String = "unsubscribe",
     val topic: String = "slots",
     val doctor: String? = null,
@@ -25,7 +22,4 @@ data class UnsubscribeOutgoing(
 )
 
 @Serializable
-data class QueueDemoOutgoing(
-    val type: String = "queue_demo",
-    val appointmentId: String
-)
+data class QueueDemoOutgoingDTO(val type: String = "queue_demo", val appointmentId: String)
