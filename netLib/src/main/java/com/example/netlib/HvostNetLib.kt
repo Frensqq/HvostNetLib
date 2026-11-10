@@ -57,7 +57,8 @@ class HvostNetLib(
             httpClient = httpClient,
             wsUrl = wsUrl
         ),
-        json = clientFactory.json
+        json = clientFactory.json,
+        getToken = { tokenStorage.getToken() }
     )
 
     suspend fun close() {

@@ -7,7 +7,7 @@ interface HvostRealtimeClient {
     val events: Flow<WebSocketEvent>
     val isConnected: Boolean
 
-    suspend fun connect(token: String)
+    suspend fun connect()
     suspend fun disconnect()
     suspend fun ping()
 

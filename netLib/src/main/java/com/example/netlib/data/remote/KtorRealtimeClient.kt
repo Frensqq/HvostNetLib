@@ -1,6 +1,7 @@
 
 package com.example.netlib.data.remote
 
+
 import com.example.netlib.data.remote.DTO.websocketDTO.PingOutgoingDTO
 import com.example.netlib.data.remote.DTO.websocketDTO.QueueDemoOutgoingDTO
 import com.example.netlib.data.remote.DTO.websocketDTO.SubscribeOutgoingDTO
@@ -14,12 +15,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
@@ -27,97 +30,120 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class KtorRealtimeClient(
     private val connection: WsConnection,
-    private val json: Json
+    private val json: Json,
+    private val getToken: () -> String?
 ) : HvostRealtimeClient {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var clientScope: CoroutineScope? = null
+    private var listenerJob: Job? = null
 
-    private val _events = MutableSharedFlow<WebSocketEvent>(replay = 1)
+    private val _events = MutableSharedFlow<WebSocketEvent>()
 
     override val events: Flow<WebSocketEvent> = _events.asSharedFlow()
 
     private var lastCloseCode: Int? = null
-    private var listenerJob: Job? = null
 
-    override var isConnected: Boolean = false
-        private set
+    @Volatile
+    private var connected = false
+
+    override val isConnected: Boolean
+        get() = connected
 
     private var activeDoctor: String? = null
     private var activeDate: String? = null
 
-    override suspend fun connect(token: String) {
+    override suspend fun connect() {
         if (listenerJob?.isActive == true) return
+
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        clientScope = scope
 
         listenerJob = scope.launch {
             var retryDelay = 1_000L
 
-            while (isActive) {
-                try {
-                    lastCloseCode = null
-                    connection.connect(token)
-                    isConnected = true
+            try {
+                while (isActive) {
+                    try {
+                        lastCloseCode = null
 
-                    val closeCode = connection.listen { message ->
-                        val event = parse(message, json)
+                        val currentToken = getToken()
 
-                        if (event is ErrorEvent && event.code == "unauthorized") {
-                            lastCloseCode = 4001
+                        if (currentToken.isNullOrBlank()) {
+                            break
                         }
 
-                        if (event is HelloEvent) {
-                            retryDelay = 1_000L
+                        connection.connect(currentToken)
+                        connected = true
 
-                            val doctor = activeDoctor
-                            val date = activeDate
+                        val closeCode = connection.listen { message ->
+                            val event = parse(message, json)
 
-                            if (doctor != null && date != null) {
-                                val subscribeMessage = json.encodeToString(
-                                    SubscribeOutgoingDTO(
-                                        doctor = doctor,
-                                        date = date
+                            if (event is ErrorEvent && event.code == "unauthorized") {
+                                lastCloseCode = 4001
+                            }
+
+                            if (event is HelloEvent) {
+                                retryDelay = 1_000L
+
+                                val doctor = activeDoctor
+                                val date = activeDate
+
+                                if (doctor != null && date != null) {
+                                    val subscribeMessage = json.encodeToString(
+                                        SubscribeOutgoingDTO(
+                                            doctor = doctor,
+                                            date = date
+                                        )
                                     )
-                                )
 
-                                connection.send(subscribeMessage)
+                                    connection.send(subscribeMessage)
+                                }
+                            }
+
+                            if (event != null) {
+                                _events.emit(event)
                             }
                         }
 
-                        if (event != null) {
-                            _events.emit(event)
+                        if (closeCode != null) {
+                            lastCloseCode = closeCode
                         }
+
+                        connected = false
+                        connection.disconnect()
+
+                        if (lastCloseCode == 4001) break
+
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        connected = false
+                        connection.disconnect()
                     }
 
-                    if (closeCode != null) {
-                        lastCloseCode = closeCode
-                    }
+                    if (!isActive || lastCloseCode == 4001) break
 
-                    isConnected = false
-                    connection.disconnect()
-
-                    if (lastCloseCode == 4001) break
-
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    isConnected = false
-                    connection.disconnect()
+                    delay(retryDelay.milliseconds)
+                    retryDelay = nextReconnectDelay(retryDelay)
                 }
-
-                if (!isActive || lastCloseCode == 4001) break
-
-                delay(retryDelay.milliseconds)
-                retryDelay = nextReconnectDelay(retryDelay)
+            } finally {
+                connected = false
+                connection.disconnect()
             }
-
-            isConnected = false
         }
     }
 
     override suspend fun disconnect() {
+        connected = false
+
         listenerJob?.cancel()
-        listenerJob = null
         connection.disconnect()
-        isConnected = false
+        listenerJob?.join()
+
+        clientScope?.cancel()
+
+        listenerJob = null
+        clientScope = null
     }
 
     override suspend fun ping() {
