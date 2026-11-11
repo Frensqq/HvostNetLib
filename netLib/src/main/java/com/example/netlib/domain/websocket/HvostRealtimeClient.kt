@@ -1,12 +1,13 @@
 package com.example.netlib.domain.websocket
 
+import com.example.netlib.domain.model.websocket.WebSocketEvent
 import kotlinx.coroutines.flow.Flow
 
 interface HvostRealtimeClient {
-    val events: Flow<Any>
+    val events: Flow<WebSocketEvent>
     val isConnected: Boolean
 
-    suspend fun connect(token: String)
+    suspend fun connect()
     suspend fun disconnect()
     suspend fun ping()
 

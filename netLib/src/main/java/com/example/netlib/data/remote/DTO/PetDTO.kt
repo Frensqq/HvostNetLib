@@ -9,7 +9,7 @@ data class PetInputRequest(
     val breed: String,
     val birthDate: String,
     val weightKg: Double,
-    val photo: String
+    val photo: String?= null
 )
 
 @Serializable
@@ -19,7 +19,7 @@ data class PetRequest(
     val breed: String,
     val birthDate: String,
     val weightKg: Double,
-    val photo: String,
+    val photo: String? = null,
 )
 
 @Serializable

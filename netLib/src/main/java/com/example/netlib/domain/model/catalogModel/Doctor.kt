@@ -16,7 +16,7 @@ data class Doctor(
     val services : List<String>,
     val workDays: List<Int>,
     val photo: String,
-    val expand: DoctorExpand
+    val expand: DoctorExpand? = null
 )
 
 data class DoctorList(

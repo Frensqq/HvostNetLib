@@ -6,11 +6,12 @@ import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
 import com.example.netlib.domain.model.appointmentsModel.AppointmentList
 import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.appointmentsModel.Slots
+import com.example.netlib.domain.model.query.AppointmentQuery
 
 interface AppointmentsRepository {
 
     suspend fun getAppointment(
-        filter: String? = null,
+        query: AppointmentQuery? = null,
     ): NetworkResult<AppointmentList>
 
     suspend fun postAppointment(

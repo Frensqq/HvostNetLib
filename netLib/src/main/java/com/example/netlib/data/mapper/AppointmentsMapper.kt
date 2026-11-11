@@ -40,6 +40,17 @@ fun AppointmentListResponse.toDomain(): AppointmentList{
         items =  items.map { it.toDomain() }
     )
 }
+
+fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
+    return AppointmentExpand(
+        pet?.toDomain(),
+        doctor?.toDomain(),
+        service?.toDomain(),
+        clinic?.toDomain()
+    )
+}
+
+
 fun AppointmentResponse.toDomain(): Appointment {
     return Appointment(
         id = id,
@@ -47,6 +58,7 @@ fun AppointmentResponse.toDomain(): Appointment {
         user = user,
         pet = pet,
         doctor = doctor,
+        start = start,
         service = service,
         clinic = clinic,
         status = status,
@@ -54,7 +66,7 @@ fun AppointmentResponse.toDomain(): Appointment {
         cancelReason = cancelReason,
         created = created,
         updated = updated,
-        //expand = expand.toDomain()
+        expand = expand?.toDomain()
     )
 }
 
@@ -75,10 +87,3 @@ fun SlotListResponse.toDomain(): Slots{
         slots = slots.map { it.toDomain() }
     )
 }
-
-//fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
-//    return AppointmentExpand(
-//        pet =pet,
-//
-//    )
-//}

@@ -1,154 +1,204 @@
+
 package com.example.netlib.data.remote
 
-import com.example.netlib.domain.model.websocket.*
+import com.example.netlib.data.remote.DTO.websocketDTO.PingOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.QueueDemoOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.SubscribeOutgoingDTO
+import com.example.netlib.data.remote.DTO.websocketDTO.UnsubscribeOutgoingDTO
+import com.example.netlib.domain.model.websocket.ErrorEvent
+import com.example.netlib.domain.model.websocket.HelloEvent
+import com.example.netlib.domain.model.websocket.WebSocketEvent
 import com.example.netlib.domain.websocket.HvostRealtimeClient
 import com.example.netlib.domain.websocket.WsConnection
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 class KtorRealtimeClient(
-    private val connection: WsConnection
+    private val connection: WsConnection,
+    private val json: Json,
+    private val getToken: () -> String?,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : HvostRealtimeClient {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val _events = MutableSharedFlow<Any>(replay = 1)
-
-    override val events: Flow<Any> = _events.asSharedFlow()
-
-    private var lastCloseCode: Int? = null
     private var listenerJob: Job? = null
 
-    override var isConnected: Boolean = false
-        private set
+    private val lifecycleMutex = Mutex()
+    private val subscriptionMutex = Mutex()
+
+    private val _events = MutableSharedFlow<WebSocketEvent>()
+
+    override val events: Flow<WebSocketEvent> = _events.asSharedFlow()
+
+    @Volatile
+    private var connected = false
+
+    override val isConnected: Boolean
+        get() = connected
+
+    private var lastCloseCode: Int? = null
 
     private var activeDoctor: String? = null
     private var activeDate: String? = null
 
-    override suspend fun connect(token: String) {
-        if (listenerJob?.isActive == true) return
+    override suspend fun connect() {
+        lifecycleMutex.withLock {
+            if (listenerJob?.isActive == true) return
 
-        listenerJob = scope.launch {
-            var retryDelay = 1_000L
+            listenerJob = CoroutineScope(
+                SupervisorJob() + dispatcher
+            ).launch {
+                var retryDelay = 1000L
 
-            while (isActive) {
                 try {
-                    lastCloseCode = null
-                    connection.connect(token)
-                    isConnected = true
+                    while (isActive) {
+                        try {
+                            lastCloseCode = null
 
-                    val closeCode = connection.listen { message ->
-                        val event = parse(message)
+                            val currentToken = getToken()
 
-                        if (event is ErrorEvent && event.code == "unauthorized") {
-                            lastCloseCode = 4001
-                        }
+                            if (currentToken.isNullOrBlank()) break
 
-                        if (event is HelloEvent) {
-                            retryDelay = 1_000L
+                            connection.connect(currentToken)
+                            connected = true
 
-                            val doctor = activeDoctor
-                            val date = activeDate
+                            val closeCode = connection.listen { message ->
+                                val event = parse(message, json)
 
-                            if (doctor != null && date != null) {
-                                val subscribeMessage = PBApiService.json.encodeToString(
-                                    SubscribeOutgoing(
-                                        doctor = doctor,
-                                        date = date
-                                    )
-                                )
+                                if (event is ErrorEvent &&
+                                    event.code == "unauthorized"
+                                ) {
+                                    lastCloseCode = 4001
+                                }
 
-                                connection.send(subscribeMessage)
+                                if (event is HelloEvent) {
+                                    retryDelay = 1000L
+
+                                    subscriptionMutex.withLock {
+                                        val doctor = activeDoctor
+                                        val date = activeDate
+
+                                        if (doctor != null && date != null) {
+                                            connection.send(
+                                                json.encodeToString(
+                                                    SubscribeOutgoingDTO(
+                                                        doctor = doctor,
+                                                        date = date
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (event != null) {
+                                    _events.emit(event)
+                                }
                             }
+
+                            if (closeCode != null) {
+                                lastCloseCode = closeCode
+                            }
+
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            // Переподключение выполняется ниже
+                        } finally {
+                            connected = false
+                            connection.disconnect()
                         }
 
-                        if (event != null) {
-                            _events.emit(event)
-                        }
+                        if (!isActive || lastCloseCode == 4001) break
+
+                        delay(retryDelay.milliseconds)
+                        retryDelay = nextReconnectDelay(retryDelay)
                     }
-
-                    if (closeCode != null) {
-                        lastCloseCode = closeCode
-                    }
-
-                    isConnected = false
-                    connection.disconnect()
-
-                    if (lastCloseCode == 4001) break
-
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    isConnected = false
+                } finally {
+                    connected = false
                     connection.disconnect()
                 }
-
-                if (!isActive || lastCloseCode == 4001) break
-
-                delay(retryDelay)
-                retryDelay = nextReconnectDelay(retryDelay)
             }
-
-            isConnected = false
         }
     }
 
     override suspend fun disconnect() {
-        listenerJob?.cancel()
-        listenerJob = null
-        connection.disconnect()
-        isConnected = false
+        lifecycleMutex.withLock {
+            connected = false
+
+            val job = listenerJob
+            listenerJob = null
+
+            job?.cancelAndJoin()
+
+            connection.disconnect()
+        }
     }
 
     override suspend fun ping() {
-        val message = PBApiService.json.encodeToString(PingOutgoing())
-        connection.send(message)
+        connection.send(json.encodeToString(PingOutgoingDTO()))
     }
 
     override suspend fun subscribeSlots(doctor: String, date: String) {
-        val message = PBApiService.json.encodeToString(
-            SubscribeOutgoing(
-                doctor = doctor,
-                date = date
-            )
-        )
+        subscriptionMutex.withLock {
+            activeDoctor = doctor
+            activeDate = date
 
-        connection.send(message)
-
-        activeDoctor = doctor
-        activeDate = date
+            if (connected) {
+                connection.send(
+                    json.encodeToString(
+                        SubscribeOutgoingDTO(
+                            doctor = doctor,
+                            date = date
+                        )
+                    )
+                )
+            }
+        }
     }
 
-    override suspend fun unsubscribeSlots(doctor: String?, date: String?) {
-        val message = PBApiService.json.encodeToString(
-            UnsubscribeOutgoing(
-                doctor = doctor,
-                date = date
-            )
-        )
+    override suspend fun unsubscribeSlots(
+        doctor: String?,
+        date: String?
+    ) {
+        subscriptionMutex.withLock {
+            activeDoctor = null
+            activeDate = null
 
-        connection.send(message)
-
-        activeDoctor = null
-        activeDate = null
+            if (connected) {
+                connection.send(
+                    json.encodeToString(
+                        UnsubscribeOutgoingDTO(
+                            doctor = doctor,
+                            date = date
+                        )
+                    )
+                )
+            }
+        }
     }
 
     override suspend fun requestQueueDemo(appointmentId: String) {
-        val message = PBApiService.json.encodeToString(
-            QueueDemoOutgoing(appointmentId = appointmentId)
+        connection.send(
+            json.encodeToString(
+                QueueDemoOutgoingDTO(appointmentId = appointmentId)
+            )
         )
-
-        connection.send(message)
     }
 }
 

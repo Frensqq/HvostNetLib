@@ -1,23 +1,15 @@
 package com.example.netlib.data.mapper
 
-import android.service.autofill.UserData
-import com.example.netlib.data.remote.DTO.AppointmentListResponse
-import com.example.netlib.data.remote.DTO.AppointmentRequest
-import com.example.netlib.data.remote.DTO.AppointmentResponse
 import com.example.netlib.data.remote.DTO.AuthRequest
 import com.example.netlib.data.remote.DTO.AuthResponse
-import com.example.netlib.data.remote.DTO.CancelRequest
 import com.example.netlib.data.remote.DTO.RegistrationRequest
 import com.example.netlib.data.remote.DTO.UserResponse
 import com.example.netlib.data.remote.DTO.UserUpdateRequest
-import com.example.netlib.domain.model.appointmentsModel.Appointment
-import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
-import com.example.netlib.domain.model.appointmentsModel.AppointmentList
-import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.authModel.Auth
 import com.example.netlib.domain.model.authModel.AuthData
 import com.example.netlib.domain.model.authModel.Registration
 import com.example.netlib.domain.model.authModel.User
+import com.example.netlib.domain.model.authModel.UserUpdateData
 
 fun Registration.toRequest(): RegistrationRequest {
     return RegistrationRequest(
@@ -55,5 +47,5 @@ fun AuthResponse.toDomain(): Auth =
     )
 
 
-fun User.toRequest(): UserUpdateRequest =
-    UserUpdateRequest(name, phone, avatar)
+fun UserUpdateData.toRequest(): UserUpdateRequest =
+    UserUpdateRequest(name, phone)

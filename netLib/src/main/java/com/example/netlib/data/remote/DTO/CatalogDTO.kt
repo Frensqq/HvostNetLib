@@ -8,7 +8,7 @@ data class ServiceResponse(
     val code: String,
     val name: String,
     val price: Int,
-    val duration: Int,
+    val durationMin: Int,
     val sort: Int,
 )
 
@@ -62,7 +62,7 @@ data class DoctorResponse(
     val services : List<String>,
     val workDays: List<Int>,
     val photo: String,
-    val expand: DoctorExpandResponse
+    val expand: DoctorExpandResponse? = null
 )
 
 @Serializable

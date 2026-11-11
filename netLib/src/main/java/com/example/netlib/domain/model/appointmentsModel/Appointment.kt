@@ -22,6 +22,7 @@ data class Appointment(
     val service: String,
     val clinic: String,
     val status: String,
+    val start: String,
     val comment: String,
     val cancelReason: String,
     val created: String,

@@ -9,16 +9,18 @@ import io.ktor.websocket.DefaultWebSocketSession
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
-import io.ktor.websocket.send
 
 class KtorWsConnection(
     private val httpClient: HttpClient,
     private val wsUrl: String
 ) : WsConnection {
 
+    @Volatile
     private var session: DefaultWebSocketSession? = null
 
     override suspend fun connect(token: String) {
+        disconnect()
+
         session = httpClient.webSocketSession {
             url(wsUrl)
             url.parameters.append("token", token)
@@ -26,8 +28,9 @@ class KtorWsConnection(
     }
 
     override suspend fun disconnect() {
-        session?.close()
+        val currentSession = session
         session = null
+        currentSession?.close()
     }
 
     override suspend fun send(message: String) {
@@ -54,13 +57,15 @@ class KtorWsConnection(
             ?: throw IllegalStateException("WebSocket is not connected")
 
         for (frame in currentSession.incoming) {
-            if (frame is Frame.Text) {
-                onMessage(frame.readText())
+            when (frame) {
+                is Frame.Text -> onMessage(frame.readText())
+                is Frame.Close -> {
+                    return currentSession.closeReason.await()?.code?.toInt()
+                }
+                else -> Unit
             }
         }
 
-        return currentSession.closeReason.await()
-            ?.code
-            ?.toInt()
+        return currentSession.closeReason.await()?.code?.toInt()
     }
 }
