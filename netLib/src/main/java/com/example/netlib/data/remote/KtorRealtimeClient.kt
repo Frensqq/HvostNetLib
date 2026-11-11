@@ -10,11 +10,11 @@ import com.example.netlib.domain.model.websocket.HelloEvent
 import com.example.netlib.domain.model.websocket.WebSocketEvent
 import com.example.netlib.domain.websocket.HvostRealtimeClient
 import com.example.netlib.domain.websocket.WsConnection
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +32,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class KtorRealtimeClient(
     private val connection: WsConnection,
     private val json: Json,
-    private val getToken: () -> String?
+    private val getToken: () -> String?,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : HvostRealtimeClient {
 
     private var listenerJob: Job? = null
@@ -60,7 +61,7 @@ class KtorRealtimeClient(
             if (listenerJob?.isActive == true) return
 
             listenerJob = CoroutineScope(
-                SupervisorJob() + Dispatchers.IO
+                SupervisorJob() + dispatcher
             ).launch {
                 var retryDelay = 1000L
 

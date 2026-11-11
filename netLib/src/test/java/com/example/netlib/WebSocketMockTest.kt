@@ -8,13 +8,18 @@ import com.example.netlib.domain.model.websocket.HelloEvent
 import com.example.netlib.domain.model.websocket.SlotTakenEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WebSocketMockTest {
 
     private val json = Json {
@@ -71,9 +76,10 @@ class WebSocketMockTest {
         assertIs<HelloEvent>(helloEvent)
 
         val client = KtorRealtimeClient(
-            connection,
-            json
-        ) { "test-token" }
+            connection = connection,
+            json = json,
+            getToken = { "test-token" }
+        )
 
         client.subscribeSlots("doctor-1", "2026-11-11")
         connection.sentMessages.clear()
@@ -98,28 +104,28 @@ class WebSocketMockTest {
     }
 
     @Test
-    fun closeCode4001DoesNotReconnect() = runBlocking {
+    fun closeCode4001DoesNotReconnect() = runTest {
         val connection = FakeWsConnection()
-
         connection.disconnectFirst = false
         connection.closeCode = 4001
 
         val client = KtorRealtimeClient(
-            connection,
-            json
-        ) { "test-token" }
+            connection = connection,
+            json = json,
+            dispatcher = StandardTestDispatcher(testScheduler),
+            getToken = { "test-token" }
+        )
 
         try {
             client.connect()
 
-            withTimeout(3000) {
-                while (connection.listenCount < 1) {
-                    delay(10)
-                }
-            }
+            runCurrent()
 
-            // Ждём дольше начальной задержки переподключения.
-            delay(1500)
+            assertEquals(1, connection.connectCount)
+            assertEquals(1, connection.listenCount)
+
+            advanceTimeBy(5000)
+            runCurrent()
 
             assertEquals(1, connection.connectCount)
             assertEquals(1, connection.listenCount)

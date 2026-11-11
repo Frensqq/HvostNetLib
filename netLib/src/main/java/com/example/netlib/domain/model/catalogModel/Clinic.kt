@@ -1,8 +1,5 @@
 package com.example.netlib.domain.model.catalogModel
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Clinic(
     val id: String,
     val name: String,
@@ -15,7 +12,7 @@ data class Clinic(
 )
 
 
-@Serializable
+
 data class ClinicList(
     val page:Int,
     val perPage: Int,

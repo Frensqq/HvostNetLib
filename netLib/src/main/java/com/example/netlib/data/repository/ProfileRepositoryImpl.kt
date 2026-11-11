@@ -2,7 +2,6 @@ package com.example.netlib.data.repository
 
 import com.example.netlib.data.mapper.toDomain
 import com.example.netlib.data.mapper.toRequest
-import com.example.netlib.data.remote.DTO.UploadFile
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.domain.model.FileUpload
 import com.example.netlib.domain.model.NetworkResult

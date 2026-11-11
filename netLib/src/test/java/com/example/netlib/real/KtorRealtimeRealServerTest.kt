@@ -222,10 +222,10 @@ class KtorRealtimeRealServerTest {
 
         val appointment = appointments.firstOrNull { item ->
             item.status != "done" &&
-                item.status != "cancelled" &&
-                runCatching {
-                    Instant.parse(item.start.replace(" ", "T")).isAfter(now)
-                }.getOrDefault(false)
+                    item.status != "cancelled" &&
+                    runCatching {
+                        Instant.parse(item.start.replace(" ", "T")).isAfter(now)
+                    }.getOrDefault(false)
         }
 
         assumeTrue(
