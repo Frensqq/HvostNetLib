@@ -1,16 +1,22 @@
 package com.example.netlib.domain.model.query
 
 data class ServiceQuery(
+    val page: Int? = null,
+    val perPage: Int? = null,
     val sort: String? = null
 )
 
 data class ClinicQuery(
+    val page: Int? = null,
+    val perPage: Int? = null,
     val sort: String? = null
 )
 
 data class DoctorQuery(
     val serviceId: String? = null,
     val clinicId: String? = null,
+    val page: Int? = null,
+    val perPage: Int? = null,
     val sort: String? = null
 )
 

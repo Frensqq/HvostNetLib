@@ -15,9 +15,12 @@ class KtorWsConnection(
     private val wsUrl: String
 ) : WsConnection {
 
+    @Volatile
     private var session: DefaultWebSocketSession? = null
 
     override suspend fun connect(token: String) {
+        disconnect()
+
         session = httpClient.webSocketSession {
             url(wsUrl)
             url.parameters.append("token", token)
@@ -25,8 +28,9 @@ class KtorWsConnection(
     }
 
     override suspend fun disconnect() {
-        session?.close()
+        val currentSession = session
         session = null
+        currentSession?.close()
     }
 
     override suspend fun send(message: String) {
@@ -52,21 +56,16 @@ class KtorWsConnection(
         val currentSession = session
             ?: throw IllegalStateException("WebSocket is not connected")
 
-        println("Начали слушать WebSocket")
-
         for (frame in currentSession.incoming) {
-            println("Получен WebSocket frame: $frame")
-
-            if (frame is Frame.Text) {
-                val message = frame.readText()
-                println("Текст WebSocket: $message")
-                onMessage(message)
+            when (frame) {
+                is Frame.Text -> onMessage(frame.readText())
+                is Frame.Close -> {
+                    return currentSession.closeReason.await()?.code?.toInt()
+                }
+                else -> Unit
             }
         }
 
-        val closeCode = currentSession.closeReason.await()?.code?.toInt()
-        println("WebSocket закрыт. Код: $closeCode")
-
-        return closeCode
+        return currentSession.closeReason.await()?.code?.toInt()
     }
 }

@@ -23,6 +23,8 @@ class CatalogRepositoryImpl(
     ): NetworkResult<ServiceList> {
         return safeApiCall {
             api.getServices(
+                page = query?.page,
+                perPage = query?.perPage,
                 sort = query?.sort
             ).toDomain()
         }
@@ -33,6 +35,8 @@ class CatalogRepositoryImpl(
     ): NetworkResult<ClinicList> {
         return safeApiCall {
             api.getClinics(
+                page = query?.page,
+                perPage = query?.perPage,
                 sort = query?.sort
             ).toDomain()
         }
@@ -44,6 +48,8 @@ class CatalogRepositoryImpl(
         return safeApiCall {
             api.getDoctors(
                 filter = query?.toFilter(),
+                page = query?.page,
+                perPage = query?.perPage,
                 sort = query?.sort
             ).toDomain()
         }

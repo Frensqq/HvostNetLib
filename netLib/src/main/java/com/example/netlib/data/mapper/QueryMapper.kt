@@ -1,17 +1,23 @@
+
 package com.example.netlib.data.mapper
 
 import com.example.netlib.domain.model.query.AppointmentQuery
 import com.example.netlib.domain.model.query.DoctorQuery
 
+private fun String.escapeFilterValue(): String {
+    return replace("\\", "\\\\")
+        .replace("'", "\\'")
+}
+
 fun DoctorQuery.toFilter(): String? {
     val filters = mutableListOf<String>()
 
-    serviceId?.let {
-        filters.add("services~'$it'")
+    serviceId?.takeIf { it.isNotBlank() }?.let {
+        filters.add("services~'${it.escapeFilterValue()}'")
     }
 
-    clinicId?.let {
-        filters.add("clinic='$it'")
+    clinicId?.takeIf { it.isNotBlank() }?.let {
+        filters.add("clinic='${it.escapeFilterValue()}'")
     }
 
     return filters.takeIf { it.isNotEmpty() }
@@ -31,12 +37,12 @@ fun AppointmentQuery.toFilter(): String? {
                     separator = " || ",
                     prefix = "(",
                     postfix = ")"
-                ) { "status='$it'" }
+                ) { "status='${it.escapeFilterValue()}'" }
             )
         }
 
     petId?.takeIf { it.isNotBlank() }?.let {
-        filters.add("pet='$it'")
+        filters.add("pet='${it.escapeFilterValue()}'")
     }
 
     return filters.takeIf { it.isNotEmpty() }

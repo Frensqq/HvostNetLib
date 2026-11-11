@@ -11,7 +11,7 @@ import com.example.netlib.data.repository.AuthRepositoryImpl
 import com.example.netlib.data.repository.CatalogRepositoryImpl
 import com.example.netlib.data.repository.PetRepositoryImpl
 import com.example.netlib.data.repository.ProfileRepositoryImpl
-import com.example.netlib.data.storage.TokenStorage
+import com.example.netlib.data.storage.TokenStorageImpl
 import com.example.netlib.domain.repository.AppointmentsRepository
 import com.example.netlib.domain.repository.AuthRepository
 import com.example.netlib.domain.repository.CatalogRepository
@@ -24,11 +24,11 @@ class HvostNetLib(
     baseUrl: String,
     wsUrl: String
 ) {
-    private val tokenStorage = TokenStorage()
+    private val tokenStorageImpl = TokenStorageImpl(context)
 
     private val clientFactory = PBApiService(
         baseUrl = baseUrl,
-        getToken = { tokenStorage.getToken() }
+        getToken = { tokenStorageImpl.getToken() }
     )
 
     private val httpClient = clientFactory.create()
@@ -38,7 +38,7 @@ class HvostNetLib(
     private val networkMonitor = NetworkImpl(context.applicationContext)
 
     val authRepository: AuthRepository =
-        AuthRepositoryImpl(api, networkMonitor, tokenStorage)
+        AuthRepositoryImpl(api, networkMonitor, tokenStorageImpl)
 
     val profileRepository: ProfileRepository =
         ProfileRepositoryImpl(api, networkMonitor)
@@ -58,7 +58,7 @@ class HvostNetLib(
             wsUrl = wsUrl
         ),
         json = clientFactory.json,
-        getToken = { tokenStorage.getToken() }
+        getToken = { tokenStorageImpl.getToken() }
     )
 
     suspend fun close() {

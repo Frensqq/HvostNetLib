@@ -1,7 +1,6 @@
 
 package com.example.netlib.data.remote
 
-
 import com.example.netlib.data.remote.DTO.websocketDTO.PingOutgoingDTO
 import com.example.netlib.data.remote.DTO.websocketDTO.QueueDemoOutgoingDTO
 import com.example.netlib.data.remote.DTO.websocketDTO.SubscribeOutgoingDTO
@@ -16,13 +15,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
@@ -35,15 +36,14 @@ class KtorRealtimeClient(
 ) : HvostRealtimeClient {
 
     private var clientScope: CoroutineScope? = null
-
-
     private var listenerJob: Job? = null
+
+    private val lifecycleMutex = Mutex()
+    private val subscriptionMutex = Mutex()
 
     private val _events = MutableSharedFlow<WebSocketEvent>()
 
     override val events: Flow<WebSocketEvent> = _events.asSharedFlow()
-
-    private var lastCloseCode: Int? = null
 
     @Volatile
     private var connected = false
@@ -51,142 +51,154 @@ class KtorRealtimeClient(
     override val isConnected: Boolean
         get() = connected
 
+    private var lastCloseCode: Int? = null
+
     private var activeDoctor: String? = null
     private var activeDate: String? = null
 
     override suspend fun connect() {
-        if (listenerJob?.isActive == true) return
+        lifecycleMutex.withLock {
+            if (listenerJob?.isActive == true) return
 
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        clientScope = scope
+            val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+            clientScope = scope
 
-        listenerJob = scope.launch {
-            var retryDelay = 1_000L
+            listenerJob = scope.launch {
+                var retryDelay = 1000L
 
-            try {
-                while (isActive) {
-                    try {
-                        lastCloseCode = null
+                try {
+                    while (isActive) {
+                        try {
+                            lastCloseCode = null
 
-                        val currentToken = getToken()
+                            val currentToken = getToken()
 
-                        if (currentToken.isNullOrBlank()) {
-                            break
-                        }
+                            if (currentToken.isNullOrBlank()) break
 
-                        connection.connect(currentToken)
-                        connected = true
+                            connection.connect(currentToken)
+                            connected = true
 
-                        val closeCode = connection.listen { message ->
-                            val event = parse(message, json)
+                            val closeCode = connection.listen { message ->
+                                val event = parse(message, json)
 
-                            if (event is ErrorEvent && event.code == "unauthorized") {
-                                lastCloseCode = 4001
-                            }
+                                if (event is ErrorEvent &&
+                                    event.code == "unauthorized"
+                                ) {
+                                    lastCloseCode = 4001
+                                }
 
-                            if (event is HelloEvent) {
-                                retryDelay = 1_000L
+                                if (event is HelloEvent) {
+                                    retryDelay = 1000L
 
-                                val doctor = activeDoctor
-                                val date = activeDate
+                                    subscriptionMutex.withLock {
+                                        val doctor = activeDoctor
+                                        val date = activeDate
 
-                                if (doctor != null && date != null) {
-                                    val subscribeMessage = json.encodeToString(
-                                        SubscribeOutgoingDTO(
-                                            doctor = doctor,
-                                            date = date
-                                        )
-                                    )
+                                        if (doctor != null && date != null) {
+                                            connection.send(
+                                                json.encodeToString(
+                                                    SubscribeOutgoingDTO(
+                                                        doctor = doctor,
+                                                        date = date
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
 
-                                    connection.send(subscribeMessage)
+                                if (event != null) {
+                                    _events.emit(event)
                                 }
                             }
 
-                            if (event != null) {
-                                _events.emit(event)
+                            if (closeCode != null) {
+                                lastCloseCode = closeCode
                             }
+
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            // Переподключение выполняется ниже
+                        } finally {
+                            connected = false
+                            connection.disconnect()
                         }
 
-                        if (closeCode != null) {
-                            lastCloseCode = closeCode
-                        }
+                        if (!isActive || lastCloseCode == 4001) break
 
-                        connected = false
-                        connection.disconnect()
-
-                        if (lastCloseCode == 4001) break
-
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (_: Exception) {
-                        connected = false
-                        connection.disconnect()
+                        delay(retryDelay.milliseconds)
+                        retryDelay = nextReconnectDelay(retryDelay)
                     }
-
-                    if (!isActive || lastCloseCode == 4001) break
-
-                    delay(retryDelay.milliseconds)
-                    retryDelay = nextReconnectDelay(retryDelay)
+                } finally {
+                    connected = false
+                    connection.disconnect()
                 }
-            } finally {
-                connected = false
-                connection.disconnect()
             }
         }
     }
 
     override suspend fun disconnect() {
-        connected = false
+        lifecycleMutex.withLock {
+            connected = false
 
-        listenerJob?.cancel()
-        connection.disconnect()
-        listenerJob?.join()
+            listenerJob?.cancelAndJoin()
+            listenerJob = null
 
-        clientScope?.cancel()
-
-        listenerJob = null
-        clientScope = null
+            clientScope?.cancel()
+            clientScope = null
+        }
     }
 
     override suspend fun ping() {
-        val message = json.encodeToString(PingOutgoingDTO())
-        connection.send(message)
+        connection.send(json.encodeToString(PingOutgoingDTO()))
     }
 
     override suspend fun subscribeSlots(doctor: String, date: String) {
-        val message = json.encodeToString(
-            SubscribeOutgoingDTO(
-                doctor = doctor,
-                date = date
-            )
-        )
+        subscriptionMutex.withLock {
+            activeDoctor = doctor
+            activeDate = date
 
-        connection.send(message)
-
-        activeDoctor = doctor
-        activeDate = date
+            if (connected) {
+                connection.send(
+                    json.encodeToString(
+                        SubscribeOutgoingDTO(
+                            doctor = doctor,
+                            date = date
+                        )
+                    )
+                )
+            }
+        }
     }
 
-    override suspend fun unsubscribeSlots(doctor: String?, date: String?) {
-        val message = json.encodeToString(
-            UnsubscribeOutgoingDTO(
-                doctor = doctor,
-                date = date
-            )
-        )
+    override suspend fun unsubscribeSlots(
+        doctor: String?,
+        date: String?
+    ) {
+        subscriptionMutex.withLock {
+            activeDoctor = null
+            activeDate = null
 
-        connection.send(message)
-
-        activeDoctor = null
-        activeDate = null
+            if (connected) {
+                connection.send(
+                    json.encodeToString(
+                        UnsubscribeOutgoingDTO(
+                            doctor = doctor,
+                            date = date
+                        )
+                    )
+                )
+            }
+        }
     }
 
     override suspend fun requestQueueDemo(appointmentId: String) {
-        val message = json.encodeToString(
-            QueueDemoOutgoingDTO(appointmentId = appointmentId)
+        connection.send(
+            json.encodeToString(
+                QueueDemoOutgoingDTO(appointmentId = appointmentId)
+            )
         )
-
-        connection.send(message)
     }
 }
 

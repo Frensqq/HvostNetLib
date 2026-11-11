@@ -1,6 +1,7 @@
 package com.example.netlib.domain.repository
 
 import com.example.netlib.data.remote.DTO.UploadFile
+import com.example.netlib.domain.model.FileUpload
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.authModel.User
 import com.example.netlib.domain.model.authModel.UserUpdateData
@@ -11,7 +12,7 @@ interface ProfileRepository {
     suspend fun patchProfile(
         userId: String,
         data: UserUpdateData,
-        avatar: UploadFile? = null
+        avatar: FileUpload? = null
     ): NetworkResult< User>
 
 }

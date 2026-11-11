@@ -4,6 +4,7 @@ import com.example.netlib.data.mapper.toDomain
 import com.example.netlib.data.mapper.toRequest
 import com.example.netlib.data.remote.DTO.UploadFile
 import com.example.netlib.data.remote.PBApi
+import com.example.netlib.domain.model.FileUpload
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.authModel.User
 import com.example.netlib.domain.model.authModel.UserUpdateData
@@ -26,13 +27,13 @@ class ProfileRepositoryImpl(
     override suspend fun patchProfile(
         userId: String,
         data: UserUpdateData,
-        avatar: UploadFile?
+        avatar: FileUpload?
     ): NetworkResult<User> {
         return safeApiCall {
             api.patchProfile(
                 userId = userId,
                 data = data.toRequest(),
-                avatar = avatar
+                avatar = avatar?.toDomain()
             ).toDomain()
         }
     }

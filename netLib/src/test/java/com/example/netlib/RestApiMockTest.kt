@@ -3,7 +3,6 @@ package com.example.netlib
 import com.example.netlib.data.remote.PBApi
 import com.example.netlib.data.repository.AppointmentRepositoryImpl
 import com.example.netlib.data.repository.AuthRepositoryImpl
-import com.example.netlib.data.storage.TokenStorage
 import com.example.netlib.domain.model.NetworkResult
 import com.example.netlib.domain.model.authModel.AuthData
 import com.example.netlib.domain.network.Network
@@ -15,7 +14,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.client.request.url
+import com.example.netlib.domain.model.appointmentsModel.AppointmentCreate
 import org.junit.Test
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
@@ -23,6 +22,8 @@ import kotlinx.serialization.json.Json
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+
+
 
 class RestApiMockTest {
 
@@ -77,7 +78,8 @@ class RestApiMockTest {
         """.trimIndent()
 
         val client = createClient(response)
-        val tokenStorage = TokenStorage()
+        val tokenStorage = FakeTokenStorage()
+
         val repository = AuthRepositoryImpl(
             PBApi(client),
             onlineNetwork,
@@ -111,7 +113,7 @@ class RestApiMockTest {
         val repository = AuthRepositoryImpl(
             PBApi(client),
             onlineNetwork,
-            TokenStorage()
+            FakeTokenStorage()
         )
 
         val result = repository.authorization(
@@ -173,17 +175,17 @@ class RestApiMockTest {
     @Test
     fun occupiedSlotReturnsStartFieldError() = runTest {
         val response = """
-            {
-                "status": 400,
-                "message": "Это время уже занято",
-                "data": {
-                    "start": {
-                        "code": "validation_not_unique",
-                        "message": "Это время уже занято"
-                    }
+        {
+            "status": 400,
+            "message": "Это время уже занято",
+            "data": {
+                "start": {
+                    "code": "validation_not_unique",
+                    "message": "Это время уже занято"
                 }
             }
-        """.trimIndent()
+        }
+    """.trimIndent()
 
         val client = createClient(response, HttpStatusCode.BadRequest)
         val repository = AppointmentRepositoryImpl(
@@ -191,12 +193,21 @@ class RestApiMockTest {
             onlineNetwork
         )
 
-        val result = repository.getSlots("doctor-1", "2026-11-11")
+        val result = repository.postAppointment(
+            AppointmentCreate(
+                pet = "pet-1",
+                doctor = "doctor-1",
+                service = "service-1",
+                start = "2026-11-11T10:00:00Z",
+                comment = ""
+            )
+        )
 
         val error = assertIs<NetworkResult.Error>(result).errorResponse
 
         assertEquals(400, error.status)
         assertTrue(error.data.containsKey("start"))
+        assertEquals("validation_not_unique", error.data["start"]?.code)
         assertEquals(
             "Это время уже занято",
             error.data["start"]?.message

@@ -163,27 +163,43 @@ class PBApi(
         )
 
 
-    suspend fun getServices(sort: String? = null): ServiceListResponse =
+    suspend fun getServices(
+        page: Int? = null,
+        perPage: Int? = null,
+        sort: String? = null
+    ): ServiceListResponse =
         get(
             path = "collections/services/records",
-            sort = sort
+            sort = sort,
+            page = page,
+            perPage = perPage
         )
 
-    suspend fun getClinics(sort: String? = null): ClinicListResponse =
+    suspend fun getClinics(
+        page: Int? = null,
+        perPage: Int? = null,
+        sort: String? = null
+    ): ClinicListResponse =
         get(
             path = "collections/clinics/records",
-            sort = sort
+            sort = sort,
+            page = page,
+            perPage = perPage
         )
 
     suspend fun getDoctors(
         filter: String? = null,
+        page: Int? = null,
+        perPage: Int? = null,
         sort: String? = null
     ): DoctorListResponse =
         get(
             path = "collections/doctors/records",
             filter = filter,
             expand = "clinic",
-            sort = sort
+            sort = sort,
+            page = page,
+            perPage = perPage
         )
 
 
