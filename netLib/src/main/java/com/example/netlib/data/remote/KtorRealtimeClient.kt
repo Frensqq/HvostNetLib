@@ -35,6 +35,8 @@ class KtorRealtimeClient(
 ) : HvostRealtimeClient {
 
     private var clientScope: CoroutineScope? = null
+
+
     private var listenerJob: Job? = null
 
     private val _events = MutableSharedFlow<WebSocketEvent>()

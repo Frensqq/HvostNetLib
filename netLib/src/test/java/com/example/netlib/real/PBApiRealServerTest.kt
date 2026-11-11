@@ -148,6 +148,21 @@ class PBApiRealServerTest {
             )
         }
     }
+    @Test
+    fun getAppointmentAfterAuthorization() = runBlocking {
+        login()
+
+        val auth = api.authorization(AuthRequest(EMAIL, PASSWORD))
+        val before = api.getAppointment()
+        val data = api.getAppointment("id='r6yzwye0hfm1oqk'")
+
+        assertTrue(before.totalItems == 16)
+        println(data.totalItems)
+        assertTrue(data.totalItems == 1)
+
+
+
+    }
 
     @Test
     fun getProfileAndPatchProfileWork() = runBlocking {

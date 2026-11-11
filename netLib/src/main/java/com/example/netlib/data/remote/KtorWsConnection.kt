@@ -52,14 +52,21 @@ class KtorWsConnection(
         val currentSession = session
             ?: throw IllegalStateException("WebSocket is not connected")
 
+        println("Начали слушать WebSocket")
+
         for (frame in currentSession.incoming) {
+            println("Получен WebSocket frame: $frame")
+
             if (frame is Frame.Text) {
-                onMessage(frame.readText())
+                val message = frame.readText()
+                println("Текст WebSocket: $message")
+                onMessage(message)
             }
         }
 
-        return currentSession.closeReason.await()
-            ?.code
-            ?.toInt()
+        val closeCode = currentSession.closeReason.await()?.code?.toInt()
+        println("WebSocket закрыт. Код: $closeCode")
+
+        return closeCode
     }
 }
