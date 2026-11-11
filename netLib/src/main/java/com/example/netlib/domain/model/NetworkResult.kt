@@ -12,7 +12,8 @@ sealed class NetworkResult<out T> {
     ) : NetworkResult<Nothing>()
 
     data class SerializationError(
-        val message: String
+        val message: String,
+        val status: Int? = null
     ) : NetworkResult<Nothing>()
 
     object NoInternet : NetworkResult<Nothing>()

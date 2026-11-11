@@ -38,22 +38,39 @@ abstract class PBRepositoryBase(
 
         } catch (e: ResponseException) {
 
+            val status = e.response.status.value
+
             val text = try {
                 e.response.bodyAsText()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                ""
+                return NetworkResult.Error(
+                    ApiError(
+                        status = status,
+                        message = "Не удалось прочитать тело ответа: ${e.message}"
+                    )
+                )
             }
 
-            val error = runCatching {
+            val error = try {
                 Json { ignoreUnknownKeys = true }
                     .decodeFromString<ErrorResponse>(text)
                     .toDomain()
-            }.getOrElse {
-                ApiError(
-                    status = e.response.status.value,
-                    message = e.message.orEmpty()
+
+            } catch (e: CancellationException) {
+                throw e
+
+            } catch (e: SerializationException) {
+                return NetworkResult.SerializationError(
+                    message = "Ошибка разбора JSON ответа сервера: ${e.message}",
+                    status = status
+                )
+
+            } catch (e: Exception) {
+                return NetworkResult.SerializationError(
+                    message = "Некорректный формат ошибки сервера: ${e.message}",
+                    status = status
                 )
             }
 

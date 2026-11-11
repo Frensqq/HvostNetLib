@@ -109,19 +109,22 @@ class WebSocketMockTest {
             json
         ) { "test-token" }
 
-        client.connect()
+        try {
+            client.connect()
 
-        withTimeout(3000) {
-            while (connection.listenCount < 1) {
-                delay(10)
+            withTimeout(3000) {
+                while (connection.listenCount < 1) {
+                    delay(10)
+                }
             }
+
+            // Ждём дольше начальной задержки переподключения.
+            delay(1500)
+
+            assertEquals(1, connection.connectCount)
+            assertEquals(1, connection.listenCount)
+        } finally {
+            client.disconnect()
         }
-
-        delay(100)
-
-        assertEquals(1, connection.connectCount)
-        assertEquals(1, connection.listenCount)
-
-        client.disconnect()
     }
 }

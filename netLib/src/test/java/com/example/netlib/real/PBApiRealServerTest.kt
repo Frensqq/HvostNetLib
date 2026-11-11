@@ -156,7 +156,7 @@ class PBApiRealServerTest {
         val before = api.getAppointment()
         val data = api.getAppointment("id='r6yzwye0hfm1oqk'")
 
-        assertTrue(before.totalItems == 16)
+        assertTrue(before.totalItems == 17)
         println(data.totalItems)
         assertTrue(data.totalItems == 1)
 

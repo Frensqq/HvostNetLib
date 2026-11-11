@@ -35,7 +35,6 @@ class KtorRealtimeClient(
     private val getToken: () -> String?
 ) : HvostRealtimeClient {
 
-    private var clientScope: CoroutineScope? = null
     private var listenerJob: Job? = null
 
     private val lifecycleMutex = Mutex()
@@ -60,10 +59,9 @@ class KtorRealtimeClient(
         lifecycleMutex.withLock {
             if (listenerJob?.isActive == true) return
 
-            val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-            clientScope = scope
-
-            listenerJob = scope.launch {
+            listenerJob = CoroutineScope(
+                SupervisorJob() + Dispatchers.IO
+            ).launch {
                 var retryDelay = 1000L
 
                 try {
@@ -142,11 +140,12 @@ class KtorRealtimeClient(
         lifecycleMutex.withLock {
             connected = false
 
-            listenerJob?.cancelAndJoin()
+            val job = listenerJob
             listenerJob = null
 
-            clientScope?.cancel()
-            clientScope = null
+            job?.cancelAndJoin()
+
+            connection.disconnect()
         }
     }
 
