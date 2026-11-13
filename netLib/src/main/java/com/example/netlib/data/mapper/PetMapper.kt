@@ -35,12 +35,12 @@ fun PetListResponse.toDomain(): PetList{
 
 fun PetData.toRequest(): PetRequest{
     return PetRequest(
-        name,
-        species,
-        breed,
-        birthDate,
-        weightKg,
-        photo
+       name = name,
+        species = species,
+        breed =  breed,
+        birthDate = birthDate,
+        weightKg =  weightKg,
+        photo =  photo
     )
 }
 

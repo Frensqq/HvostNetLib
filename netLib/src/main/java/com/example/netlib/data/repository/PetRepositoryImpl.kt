@@ -34,7 +34,7 @@ class PetRepositoryImpl(
         photo: FileUpload?
     ): NetworkResult<Pet> {
         return safeApiCall {
-            api.postPet(data.toRequest(), photo?.toDomain()).toDomain()
+            api.postPet(data.toRequest(), photo?.toRequest()).toDomain()
         }
     }
 
@@ -44,7 +44,7 @@ class PetRepositoryImpl(
         photo: FileUpload?
     ): NetworkResult<Pet> {
         return safeApiCall {
-            api.patchPet(idPet, data.toRequest(), photo?.toDomain()).toDomain()
+            api.patchPet(idPet, data.toRequest(), photo?.toRequest()).toDomain()
         }
     }
 

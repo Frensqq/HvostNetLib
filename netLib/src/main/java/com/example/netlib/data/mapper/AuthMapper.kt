@@ -23,14 +23,14 @@ fun Registration.toRequest(): RegistrationRequest {
 
 fun UserResponse.toDomain(): User{
     return User(
-        id,
-        email,
-        name,
-        phone,
-        avatar,
-        verified,
-        created,
-        updated
+       id =  id,
+       email =  email,
+       name =  name,
+       phone =  phone,
+       avatar =  avatar,
+       verified =  verified,
+       created =  created,
+       updated =  updated
     )
 }
 
@@ -48,4 +48,7 @@ fun AuthResponse.toDomain(): Auth =
 
 
 fun UserUpdateData.toRequest(): UserUpdateRequest =
-    UserUpdateRequest(name, phone)
+    UserUpdateRequest(
+        name = name,
+        phone = phone
+    )

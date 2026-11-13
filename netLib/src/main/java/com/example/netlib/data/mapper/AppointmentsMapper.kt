@@ -43,10 +43,10 @@ fun AppointmentListResponse.toDomain(): AppointmentList{
 
 fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
     return AppointmentExpand(
-        pet?.toDomain(),
-        doctor?.toDomain(),
-        service?.toDomain(),
-        clinic?.toDomain()
+       pet = pet?.toDomain(),
+       doctor = doctor?.toDomain(),
+       service =  service?.toDomain(),
+       clinic =  clinic?.toDomain()
     )
 }
 

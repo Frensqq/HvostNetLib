@@ -32,7 +32,7 @@ class ProfileRepositoryImpl(
             api.patchProfile(
                 userId = userId,
                 data = data.toRequest(),
-                avatar = avatar?.toDomain()
+                avatar = avatar?.toRequest()
             ).toDomain()
         }
     }

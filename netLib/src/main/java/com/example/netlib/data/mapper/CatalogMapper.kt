@@ -16,41 +16,41 @@ import com.example.netlib.domain.model.catalogModel.Service
 import com.example.netlib.domain.model.catalogModel.ServiceList
 
 fun ServiceResponse.toDomain(): Service =
-    Service(id,
-        code,
-        name,
-        price,
-        durationMin  ,
+    Service(id = id,
+        code = code,
+        name = name,
+       price = price,
+        durationMin = durationMin  ,
         sort = sort)
 
 
 fun ServiceListResponse.toDomain(): ServiceList =
     ServiceList(
-        page,
-        perPage,
-        totalPages,
-        totalItems,
+        page = page,
+        perPage = perPage,
+        totalPages = totalPages,
+        totalItems = totalItems,
         items = items.map { it.toDomain() }
 
     )
 
 fun ClinicResponse.toDomain(): Clinic =
-    Clinic(id,
-        name,
-        address,
-        phone,
-        lat,
-        lng,
-        hours,
-        sort)
+    Clinic(id = id,
+        name = name,
+        address =  address,
+        phone = phone,
+        lat = lat,
+        lng = lng,
+        hours = hours,
+        sort = sort)
 
 
 fun ClinicListResponse.toDomain(): ClinicList =
     ClinicList(
-        page,
-        perPage,
-        totalPages,
-        totalItems,
+        page = page,
+        perPage = perPage,
+        totalPages = totalPages,
+        totalItems = totalItems,
         items = items.map { it.toDomain() }
 
     )
@@ -61,24 +61,24 @@ fun DoctorExpandResponse.toDomain() : DoctorExpand =
     )
 
 fun DoctorResponse.toDomain(): Doctor =
-    Doctor(id,
-        name,
-        specialty,
-        experienceYears,
-        rating,
-        clinic,
-        services,
-        workDays,
-        photo,
+    Doctor(id = id,
+        name = name,
+        specialty = specialty,
+        experienceYears = experienceYears,
+        rating = rating,
+        clinic = clinic,
+        services = services,
+        workDays = workDays,
+        photo = photo,
         expand = expand?.toDomain())
 
 
 fun DoctorListResponse.toDomain(): DoctorList =
     DoctorList(
-        page,
-        perPage,
-        totalPages,
-        totalItems,
+        page = page,
+        perPage = perPage,
+        totalPages = totalPages,
+        totalItems = totalItems,
         items = items.map { it.toDomain() }
 
     )
