@@ -3,7 +3,7 @@ package com.example.netlib.data.remote.DTO
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserResponse(
+internal data class UserResponse(
     val id: String,
     val email: String,
     val name: String,
@@ -17,7 +17,7 @@ data class UserResponse(
 
 
 @Serializable
-data class UserUpdateRequest(
+internal data class UserUpdateRequest(
     val name: String? = null,
     val phone: String? = null
 )

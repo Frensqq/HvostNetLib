@@ -15,16 +15,18 @@ import com.example.netlib.domain.model.catalogModel.DoctorList
 import com.example.netlib.domain.model.catalogModel.Service
 import com.example.netlib.domain.model.catalogModel.ServiceList
 
-fun ServiceResponse.toDomain(): Service =
-    Service(id = id,
+internal fun ServiceResponse.toDomain(): Service =
+    Service(
+        id = id,
         code = code,
         name = name,
-       price = price,
-        durationMin = durationMin  ,
-        sort = sort)
+        price = price,
+        durationMin = durationMin,
+        sort = sort
+    )
 
 
-fun ServiceListResponse.toDomain(): ServiceList =
+internal fun ServiceListResponse.toDomain(): ServiceList =
     ServiceList(
         page = page,
         perPage = perPage,
@@ -34,7 +36,7 @@ fun ServiceListResponse.toDomain(): ServiceList =
 
     )
 
-fun ClinicResponse.toDomain(): Clinic =
+internal fun ClinicResponse.toDomain(): Clinic =
     Clinic(id = id,
         name = name,
         address =  address,
@@ -45,7 +47,7 @@ fun ClinicResponse.toDomain(): Clinic =
         sort = sort)
 
 
-fun ClinicListResponse.toDomain(): ClinicList =
+internal fun ClinicListResponse.toDomain(): ClinicList =
     ClinicList(
         page = page,
         perPage = perPage,
@@ -55,12 +57,12 @@ fun ClinicListResponse.toDomain(): ClinicList =
 
     )
 
-fun DoctorExpandResponse.toDomain() : DoctorExpand =
+internal fun DoctorExpandResponse.toDomain() : DoctorExpand =
     DoctorExpand(
         clinic = clinic.toDomain()
     )
 
-fun DoctorResponse.toDomain(): Doctor =
+internal fun DoctorResponse.toDomain(): Doctor =
     Doctor(id = id,
         name = name,
         specialty = specialty,
@@ -73,7 +75,7 @@ fun DoctorResponse.toDomain(): Doctor =
         expand = expand?.toDomain())
 
 
-fun DoctorListResponse.toDomain(): DoctorList =
+internal fun DoctorListResponse.toDomain(): DoctorList =
     DoctorList(
         page = page,
         perPage = perPage,

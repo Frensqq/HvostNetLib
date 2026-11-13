@@ -14,7 +14,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class PBRepositoryBase(
+internal abstract class PBRepositoryBase(
     protected val networkMonitor: Network
 ) {
     protected suspend fun <T> safeApiCall(

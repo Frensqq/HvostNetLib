@@ -3,7 +3,7 @@ package com.example.netlib.data.remote.DTO
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ErrorResponse(
+internal data class ErrorResponse(
     val status: Int = 0,
     val message: String = "",
     val data: Map<String, FieldError> = emptyMap()
@@ -14,14 +14,14 @@ data class ErrorResponse(
 
 
 @Serializable
-data class FieldError(
+internal data class FieldError(
     val code: String? = null,
     val message: String? = null
 )
 
 
 @Serializable
-data class ListMeta(
+internal data class ListMeta(
     val page: Int,
     val perPage: Int,
     val totalPages: Int,
@@ -29,7 +29,7 @@ data class ListMeta(
 )
 
 
-data class UploadFile(
+internal data class UploadFile(
     val bytes: ByteArray,
     val name: String,
     val mimeType: String = "image/jpeg"

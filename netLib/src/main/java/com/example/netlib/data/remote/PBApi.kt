@@ -39,7 +39,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlin.collections.forEach
 
-class PBApi(
+internal class PBApi(
     private val client: HttpClient,
 ) {
 

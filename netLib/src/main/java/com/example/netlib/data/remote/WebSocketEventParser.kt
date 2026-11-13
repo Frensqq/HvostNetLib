@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 
-fun parse(message: String, json: Json): WebSocketEvent? {
+internal fun parse(message: String, json: Json): WebSocketEvent? {
     return try {
         val element = json.parseToJsonElement(message)
         val type = (element as? JsonObject)
@@ -39,14 +39,9 @@ fun parse(message: String, json: Json): WebSocketEvent? {
             "delay" -> json.decodeFromString<DelayEventDTO>(message).toDomain()
             "queue" -> json.decodeFromString<QueueEventDTO>(message).toDomain()
             "queue_demo_started" -> json.decodeFromString<QueueDemoStartedEventDTO>(message).toDomain()
-            else -> {
-                println("Неизвестное WebSocket событие: $message")
-                null
-            }
+            else -> null
         }
     } catch (e: Exception) {
-        println("Ошибка разбора WebSocket сообщения: ${e.message}")
-        println("Сообщение сервера: $message")
         null
     }
 }

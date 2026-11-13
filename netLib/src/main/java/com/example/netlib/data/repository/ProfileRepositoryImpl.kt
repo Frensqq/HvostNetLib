@@ -10,7 +10,7 @@ import com.example.netlib.domain.model.authModel.UserUpdateData
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.ProfileRepository
 
-class ProfileRepositoryImpl(
+internal class ProfileRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), ProfileRepository {

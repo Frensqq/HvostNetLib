@@ -6,5 +6,4 @@ data class PetData(
     val breed: String,
     val birthDate: String,
     val weightKg: Double,
-    val photo: String? = null,
     )

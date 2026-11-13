@@ -15,7 +15,7 @@ import com.example.netlib.domain.model.appointmentsModel.Cancel
 import com.example.netlib.domain.model.appointmentsModel.Slot
 import com.example.netlib.domain.model.appointmentsModel.Slots
 
-fun AppointmentCreate.toRequest(): AppointmentRequest {
+internal fun AppointmentCreate.toRequest(): AppointmentRequest {
     return AppointmentRequest(
         pet = pet,
         doctor = doctor,
@@ -25,13 +25,13 @@ fun AppointmentCreate.toRequest(): AppointmentRequest {
     )
 }
 
-fun Cancel.toRequest(): CancelRequest {
+internal fun Cancel.toRequest(): CancelRequest {
     return CancelRequest(
         reason = reason
     )
 }
 
-fun AppointmentListResponse.toDomain(): AppointmentList{
+internal fun AppointmentListResponse.toDomain(): AppointmentList{
     return AppointmentList(
         page = page,
         perPage = perPage,
@@ -41,7 +41,7 @@ fun AppointmentListResponse.toDomain(): AppointmentList{
     )
 }
 
-fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
+internal fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
     return AppointmentExpand(
        pet = pet?.toDomain(),
        doctor = doctor?.toDomain(),
@@ -51,7 +51,7 @@ fun AppointmentExpandResponse.toDomain(): AppointmentExpand{
 }
 
 
-fun AppointmentResponse.toDomain(): Appointment {
+internal fun AppointmentResponse.toDomain(): Appointment {
     return Appointment(
         id = id,
         number = number,
@@ -70,7 +70,7 @@ fun AppointmentResponse.toDomain(): Appointment {
     )
 }
 
-fun SlotResponse.toDomain(): Slot {
+internal fun SlotResponse.toDomain(): Slot {
     return Slot(
         free = free,
         time = time,
@@ -78,7 +78,7 @@ fun SlotResponse.toDomain(): Slot {
     )
 }
 
-fun SlotListResponse.toDomain(): Slots{
+internal fun SlotListResponse.toDomain(): Slots{
     return Slots(
         doctor = doctor,
         date= date,

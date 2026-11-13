@@ -9,7 +9,7 @@ private fun String.escapeFilterValue(): String {
         .replace("'", "\\'")
 }
 
-fun DoctorQuery.toFilter(): String? {
+internal fun DoctorQuery.toFilter(): String? {
     val filters = mutableListOf<String>()
 
     serviceId?.takeIf { it.isNotBlank() }?.let {
@@ -24,7 +24,7 @@ fun DoctorQuery.toFilter(): String? {
         ?.joinToString(" && ")
 }
 
-fun AppointmentQuery.toFilter(): String? {
+internal fun AppointmentQuery.toFilter(): String? {
     val filters = mutableListOf<String>()
 
     statuses

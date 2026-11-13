@@ -3,7 +3,7 @@ package com.example.netlib.data.storage
 import android.content.Context
 import com.example.netlib.domain.storage.TokenStorage
 
-class TokenStorageImpl(context: Context): TokenStorage {
+internal class TokenStorageImpl(context: Context): TokenStorage {
 
     private val preferences = context.applicationContext
         .getSharedPreferences("hvost_net_lib", Context.MODE_PRIVATE)

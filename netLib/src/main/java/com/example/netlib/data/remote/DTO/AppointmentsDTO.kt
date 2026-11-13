@@ -3,7 +3,7 @@ package com.example.netlib.data.remote.DTO
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AppointmentRequest(
+internal data class AppointmentRequest(
     val pet: String,
     val doctor: String,
     val service: String,
@@ -12,7 +12,7 @@ data class AppointmentRequest(
 )
 
 @Serializable
-data class AppointmentExpandResponse(
+internal data class AppointmentExpandResponse(
     val pet: PetResponse? = null,
     val doctor: DoctorResponse? = null,
     val service: ServiceResponse? = null,
@@ -20,7 +20,7 @@ data class AppointmentExpandResponse(
 )
 
 @Serializable
-data class AppointmentResponse(
+internal data class AppointmentResponse(
     val id: String,
     val number: Int,
     val user: String,
@@ -39,7 +39,7 @@ data class AppointmentResponse(
 
 
 @Serializable
-data class AppointmentListResponse(
+internal data class AppointmentListResponse(
     val page:Int,
     val perPage: Int,
     val totalPages: Int,
@@ -48,14 +48,14 @@ data class AppointmentListResponse(
 )
 
 @Serializable
-data class SlotResponse (
+internal data class SlotResponse (
     val time: String,
     val start: String,
     val free: Boolean
 )
 
 @Serializable
-data class SlotListResponse(
+internal data class SlotListResponse(
     val doctor: String,
     val date: String,
     val weekday: Int,
@@ -64,6 +64,6 @@ data class SlotListResponse(
 )
 
 @Serializable
-data class CancelRequest(
+internal data class CancelRequest(
     val reason: String? = null
 )

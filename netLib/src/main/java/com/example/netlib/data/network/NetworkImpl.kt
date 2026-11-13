@@ -5,7 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.example.netlib.domain.network.Network
 
-class NetworkImpl(private val context: Context): Network {
+internal class NetworkImpl(private val context: Context): Network {
     override fun isConnected(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return  false

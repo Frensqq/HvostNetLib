@@ -87,7 +87,11 @@ class WebSocketMockTest {
         client.connect()
 
         withTimeout(5000) {
-            while (connection.listenCount < 2) {
+            while (
+                connection.sentMessages.count {
+                    it.contains("\"doctor\":\"doctor-1\"")
+                } < 2
+            ) {
                 delay(10)
             }
         }

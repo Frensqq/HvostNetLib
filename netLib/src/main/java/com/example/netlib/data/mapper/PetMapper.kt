@@ -7,8 +7,7 @@ import com.example.netlib.domain.model.petModel.Pet
 import com.example.netlib.domain.model.petModel.PetData
 import com.example.netlib.domain.model.petModel.PetList
 
-
-fun PetResponse.toDomain(): Pet{
+internal fun PetResponse.toDomain(): Pet {
     return Pet(
         id = id,
         owner = owner,
@@ -22,25 +21,23 @@ fun PetResponse.toDomain(): Pet{
         updated = updated
     )
 }
-fun PetListResponse.toDomain(): PetList{
+
+internal fun PetListResponse.toDomain(): PetList {
     return PetList(
         page = page,
         perPage = perPage,
         totalPages = totalPages,
         totalItems = totalItems,
         items = items.map { it.toDomain() }
-
     )
 }
 
-fun PetData.toRequest(): PetRequest{
+internal fun PetData.toRequest(): PetRequest {
     return PetRequest(
-       name = name,
+        name = name,
         species = species,
-        breed =  breed,
+        breed = breed,
         birthDate = birthDate,
-        weightKg =  weightKg,
-        photo =  photo
+        weightKg = weightKg
     )
 }
-

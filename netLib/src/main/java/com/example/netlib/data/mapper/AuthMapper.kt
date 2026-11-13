@@ -11,7 +11,7 @@ import com.example.netlib.domain.model.authModel.Registration
 import com.example.netlib.domain.model.authModel.User
 import com.example.netlib.domain.model.authModel.UserUpdateData
 
-fun Registration.toRequest(): RegistrationRequest {
+internal fun Registration.toRequest(): RegistrationRequest {
     return RegistrationRequest(
         email = email,
         name = name,
@@ -21,33 +21,33 @@ fun Registration.toRequest(): RegistrationRequest {
     )
 }
 
-fun UserResponse.toDomain(): User{
+internal fun UserResponse.toDomain(): User {
     return User(
-       id =  id,
-       email =  email,
-       name =  name,
-       phone =  phone,
-       avatar =  avatar,
-       verified =  verified,
-       created =  created,
-       updated =  updated
+        id = id,
+        email = email,
+        name = name,
+        phone = phone,
+        avatar = avatar,
+        verified = verified,
+        created = created,
+        updated = updated
     )
 }
 
-fun AuthData.toRequest(): AuthRequest =
+internal fun AuthData.toRequest(): AuthRequest =
     AuthRequest(
         identity = identity,
         password = password
     )
 
-fun AuthResponse.toDomain(): Auth =
+internal fun AuthResponse.toDomain(): Auth =
     Auth(
         token = token,
         record = record.toDomain()
     )
 
 
-fun UserUpdateData.toRequest(): UserUpdateRequest =
+internal fun UserUpdateData.toRequest(): UserUpdateRequest =
     UserUpdateRequest(
         name = name,
         phone = phone

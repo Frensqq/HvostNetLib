@@ -12,7 +12,7 @@ import com.example.netlib.domain.model.query.PetQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.PetRepository
 
-class PetRepositoryImpl(
+internal class PetRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), PetRepository {

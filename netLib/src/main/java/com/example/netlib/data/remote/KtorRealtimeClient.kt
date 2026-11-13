@@ -29,7 +29,7 @@ import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
 
-class KtorRealtimeClient(
+internal class KtorRealtimeClient(
     private val connection: WsConnection,
     private val json: Json,
     private val getToken: () -> String?,
@@ -41,7 +41,9 @@ class KtorRealtimeClient(
     private val lifecycleMutex = Mutex()
     private val subscriptionMutex = Mutex()
 
-    private val _events = MutableSharedFlow<WebSocketEvent>()
+    private val _events = MutableSharedFlow<WebSocketEvent>(
+        extraBufferCapacity = 64
+    )
 
     override val events: Flow<WebSocketEvent> = _events.asSharedFlow()
 

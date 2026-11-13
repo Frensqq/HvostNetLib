@@ -3,31 +3,31 @@ package com.example.netlib.data.remote.DTO.websocketDTO
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WebSocketUserDTO(val id: String, val email: String, val name: String = "")
+internal data class WebSocketUserDTO(val id: String, val email: String, val name: String = "")
 
 @Serializable
-data class HelloEventDTO(val user: WebSocketUserDTO, val serverTime: String)
+internal data class HelloEventDTO(val user: WebSocketUserDTO, val serverTime: String)
 
 @Serializable
-data class PongEventDTO(val time: String = "")
+internal data class PongEventDTO(val time: String = "")
 
 @Serializable
-data class ErrorEventDTO(val code: String, val message: String = "")
+internal data class ErrorEventDTO(val code: String, val message: String = "")
 
 @Serializable
-data class SubscribedEventDTO(val topic: String, val doctor: String? = null, val date: String? = null)
+internal data class SubscribedEventDTO(val topic: String, val doctor: String? = null, val date: String? = null)
 
 @Serializable
-data class UnsubscribedEventDTO(val topic: String, val doctor: String? = null, val date: String? = null)
+internal data class UnsubscribedEventDTO(val topic: String, val doctor: String? = null, val date: String? = null)
 
 @Serializable
-data class SlotTakenEventDTO(val doctor: String, val date: String, val time: String, val start: String)
+internal data class SlotTakenEventDTO(val doctor: String, val date: String, val time: String, val start: String)
 
 @Serializable
-data class SlotFreedEventDTO(val doctor: String, val date: String, val time: String, val start: String)
+internal data class SlotFreedEventDTO(val doctor: String, val date: String, val time: String, val start: String)
 
 @Serializable
-data class StatusEventDTO(
+internal data class StatusEventDTO(
     val appointmentId: String,
     val number: Int,
     val status: String,
@@ -39,7 +39,7 @@ data class StatusEventDTO(
 )
 
 @Serializable
-data class DelayEventDTO(
+internal data class DelayEventDTO(
     val appointmentId: String,
     val number: Int,
     val minutes: Int,
@@ -48,7 +48,7 @@ data class DelayEventDTO(
 )
 
 @Serializable
-data class QueueEventDTO(
+internal data class QueueEventDTO(
     val appointmentId: String,
     val number: Int,
     val state: String,
@@ -61,4 +61,4 @@ data class QueueEventDTO(
 )
 
 @Serializable
-data class QueueDemoStartedEventDTO(val appointmentId: String, val stepSec: Int = 8)
+internal data class QueueDemoStartedEventDTO(val appointmentId: String, val stepSec: Int = 8)

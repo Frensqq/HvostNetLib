@@ -10,7 +10,7 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 
-class KtorWsConnection(
+internal class KtorWsConnection(
     private val httpClient: HttpClient,
     private val wsUrl: String
 ) : WsConnection {
@@ -38,16 +38,6 @@ class KtorWsConnection(
             ?: throw IllegalStateException("WebSocket is not connected")
 
         currentSession.send(Frame.Text(message))
-    }
-
-    suspend fun receive(): String? {
-        val currentSession = session
-            ?: throw IllegalStateException("WebSocket is not connected")
-
-        return when (val frame = currentSession.incoming.receive()) {
-            is Frame.Text -> frame.readText()
-            else -> null
-        }
     }
 
     override suspend fun listen(

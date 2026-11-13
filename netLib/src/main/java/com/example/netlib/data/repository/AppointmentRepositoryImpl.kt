@@ -14,7 +14,7 @@ import com.example.netlib.domain.model.query.AppointmentQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.AppointmentsRepository
 
-class AppointmentRepositoryImpl(
+internal class AppointmentRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), AppointmentsRepository {

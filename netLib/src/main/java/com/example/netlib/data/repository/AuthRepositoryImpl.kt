@@ -12,7 +12,7 @@ import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.AuthRepository
 import com.example.netlib.domain.storage.TokenStorage
 
-class AuthRepositoryImpl(
+internal class AuthRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network,
     private val tokenStorageImpl: TokenStorage

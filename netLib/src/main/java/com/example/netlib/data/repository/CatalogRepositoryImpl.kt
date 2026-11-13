@@ -13,7 +13,7 @@ import com.example.netlib.domain.model.query.ServiceQuery
 import com.example.netlib.domain.network.Network
 import com.example.netlib.domain.repository.CatalogRepository
 
-class CatalogRepositoryImpl(
+internal class CatalogRepositoryImpl(
     private val api: PBApi,
     networkMonitor: Network
 ) : PBRepositoryBase(networkMonitor), CatalogRepository {

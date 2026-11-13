@@ -4,7 +4,7 @@ import com.example.netlib.data.remote.DTO.ErrorResponse
 import com.example.netlib.domain.model.ApiError
 import com.example.netlib.domain.model.ApiFieldError
 
-fun ErrorResponse.toDomain(): ApiError {
+internal fun ErrorResponse.toDomain(): ApiError {
     return ApiError(
         status = status,
         message = message,
