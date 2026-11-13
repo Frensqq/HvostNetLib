@@ -8,6 +8,7 @@ import com.example.netlib.domain.network.Network
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.bodyAsText
+import io.ktor.serialization.JsonConvertException
 import io.ktor.utils.io.errors.IOException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -75,6 +76,11 @@ abstract class PBRepositoryBase(
             }
 
             NetworkResult.Error(error)
+
+        } catch (e: JsonConvertException) {
+            NetworkResult.SerializationError(
+                message = e.cause?.message ?: e.message ?: "JSON parsing error"
+            )
 
         } catch (e: SerializationException) {
             NetworkResult.SerializationError(
